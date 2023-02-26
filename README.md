@@ -7,20 +7,13 @@ Very useful in CTF, this is a nice tool before BloodHound ingestor.
 --internal options for real life.
 
 
-You need impacket and rockyou.txt:  
+Installation:  
 
-sudo apt-get update  
-cd ~  
 sudo git clone https://github.com/moloch54/b4blood  
-sudo cp b4blood/b4blood.py /usr/bin/b4blood  
-sudo chmod +x /usr/bin/b4blood  
-sudo apt install -y python3-pip  
-sudo git clone https://github.com/fortra/impacket /opt/impacket  
-sudo apt install -y python3-impacket  
-cd /opt/impacket  
-sudo python3 ./setup.py install  
-cd /usr/share/wordlists  
-gunzip rockyou.txt.gz  
+cd b4blood  
+sudo python setup.py  
+
+
 
 also:  
 crackmapexec, smbmap, smbclient. Should be fine on Kali.
@@ -29,7 +22,6 @@ sudo snap crackmapexec
 sudo snap smbmap  
 sudo snap smbclient  
 mkdir /usr/share/wordlists
-
 
 rockyou.txt must be in /usr/share/wordlists/rockyou.txt
 
