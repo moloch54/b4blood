@@ -9,8 +9,7 @@ You need impacket:
 https://blog.eldernode.com/install-and-use-impacket-on-kali-linux/
 
 also:
-nmap, crackmapexec, smbmap, smbclient, ldapdump
-should be fine on Kali
+nmap, crackmapexec, smbmap, smbclient, ldapdump. Should be fine on Kali
 
 rockyou.txt must be in /usr/share/wordlists/rockyou.txt
 
