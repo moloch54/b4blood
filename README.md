@@ -9,6 +9,6 @@ should be fine on Kali
 
 rockyou.txt must be in /usr/share/wordlists/rockyou.txt
 
-You need to specifie line 11 YOUR own path for impacket:
+You need to specifie line 11 YOUR own path for impacket/examples: 
 path_impacket="/opt/impacket/examples"
 
