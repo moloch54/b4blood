@@ -9,7 +9,7 @@ Very useful in CTF, this is a nice tool before BloodHound ingestor.
 
 Installation:  
 
-sudo git clone https://github.com/moloch54/b4blood  
+git clone https://github.com/moloch54/b4blood  
 cd b4blood  
 sudo python setup.py  
 
