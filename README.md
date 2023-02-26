@@ -19,7 +19,7 @@ cd /usr/share/wordlists
 gunzip rockyou.txt.gz  
 
 also:  
-nmap, crackmapexec, smbmap, smbclient, ldapdump. Should be fine on Kali
+nmap, crackmapexec, smbmap, smbclient, ldapdomaindump. Should be fine on Kali
 
 rockyou.txt must be in /usr/share/wordlists/rockyou.txt
 
