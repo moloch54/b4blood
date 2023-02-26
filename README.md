@@ -12,7 +12,7 @@ You need impacket and rockyou.txt:
 sudo apt-get update  
 sudo apt install -y python3-pip  
 sudo git clone https://github.com/fortra/impacket /opt/impacket  
-sudo apt install python3-impacket  
+sudo apt install -y python3-impacket  
 cd /opt/impacket  
 sudo python3 ./setup.py install  
 cd /usr/share/wordlists  
