@@ -6,11 +6,9 @@ Very useful in CTF, this is a nice tool before BloodHound ingestor.
 --internal options for real life.
 
 You need impacket: 
-cd /opt
-python3 -m pip install impacket
-python3 -m pip install .
+https://blog.eldernode.com/install-and-use-impacket-on-kali-linux/
 
-
+also:
 nmap, crackmapexec, smbmap, smbclient, ldapdump
 should be fine on Kali
 
