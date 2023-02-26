@@ -7,18 +7,18 @@ Very useful in CTF, this is a nice tool before BloodHound ingestor.
 --internal options for real life.
 
 
-You need impacket:  
+You need impacket and rockyou.txt:  
 
 sudo apt-get update  
 sudo apt install -y python3-pip  
-sudo git clone https://github.com/SecureAuthCorp/impacket.git /opt/impacket  
+sudo git clone https://github.com/fortra/impacket /opt/impacket  
 sudo apt install python3-impacket  
+cd /opt/impacket  
 sudo python3 ./setup.py install  
-
-https://blog.eldernode.com/install-and-use-impacket-on-kali-linux/
+cd /usr/share/wordlists  
+gunzip rockyou.txt.gz  
 
 also:  
-
 nmap, crackmapexec, smbmap, smbclient, ldapdump. Should be fine on Kali
 
 rockyou.txt must be in /usr/share/wordlists/rockyou.txt
