@@ -11,7 +11,7 @@ Installation:
 
 git clone https://github.com/moloch54/b4blood  
 cd b4blood  
-sudo python setup.py  
+sudo python3 setup.py  
 
 
 
