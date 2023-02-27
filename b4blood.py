@@ -308,7 +308,7 @@ printf(f' KERBRUTING valid users, (CTRL+C) to end',green)
 
 #print(U)
 if U ==None:
-	U="/usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames_moloch.txt"
+	U="/usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt"
 
 os.system(f"kerbrute userenum --dc={ip_to_scan} -d={Domain_Name} {U} |  tee kerbrutelog.txt | grep 'VALID'")
 
