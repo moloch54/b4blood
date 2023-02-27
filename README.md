@@ -36,6 +36,9 @@ path_impacket="/opt/impacket/examples"                                          
 
 ```sh
 USAGE:  
+Make fisrt a folfer, a lot of logs will be written.  
+
+mkdir myfolder; cd myfolder  
 
 b4blood IP <OPTIONS>
 b4blood 192.168.0.45  
