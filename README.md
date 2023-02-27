@@ -40,9 +40,9 @@ Make fisrt a folder, a lot of logs will be written.
 
 mkdir myfolder; cd myfolder  
 
-b4blood IP <OPTIONS>
-b4blood 192.168.0.45  
-b4blood 192.168.0.0/24 -U users.txt -P passwd.txt  
+b4blood --ip 192.168.0.45  
+b4blood --ip 192.168.0.0/24  
+b4blood --ip 192.168.0.* -U users.txt -P passwd.txt  
 b4blood --internal -i eth0  
 ```  
 
