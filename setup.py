@@ -3,7 +3,7 @@
 import os
 
 os.system("sudo apt update")
-os.system("sudo install -y ntpdate")
+os.system("sudo install ntpsec-ntpdate -y")
 os.system("sudo cp b4blood.py /usr/bin/b4blood")
 os.system("sudo chmod +x /usr/bin/b4blood")
 os.system("sudo git clone https://github.com/fortra/impacket /opt/impacket")
