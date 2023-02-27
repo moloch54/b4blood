@@ -438,7 +438,7 @@ if len(contenu) !=0:
 			with open(f"shares/shares_{user}.txt","r") as fichier3:
 				shares=fichier3.readlines()
 			os.chdir("smb_dump")
-			extensions="txt,vbs,ps1,bat,exe,conf,xml,xslx,pdf,docx,exe,zip".split(",")
+			extensions="txt,vbs,ps1,bat,exe,conf,cfg,rsa,pem,key,xml,xslx,pdf,doc,docx,zip".split(",")
 			for share in shares:
 				share=share.replace("\n","")
 				share=share.replace(" ","")
