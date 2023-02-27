@@ -13,7 +13,8 @@ sudo python3 b4blood/setup.py
 ```
 Download kerbrute for your computer:  
 https://github.com/ropnop/kerbrute/releases  
-rename it to "kerbrute" and place it in /usr/bin
+rename it to "kerbrute" and place it in /usr/bin  
+sudo chmod +x /bin/usr/kerbrute  
 
 
 Installation (UBUNTU):  
@@ -29,6 +30,7 @@ sudo mkdir -p /usr/share/wordlists/seclists/Usernames
 Download kerbrute for your computer:  
 https://github.com/ropnop/kerbrute/releases  
 rename it to "kerbrute" and place it in /usr/bin  
+ sudo chmod +x /bin/usr/kerbrute  
 
 To download rockyou.txt:  
 https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwiKtJWIqrT9AhVFSaQEHUPZDoEQFnoECBIQAQ&url=https%3A%2F%2Fgithub.com%2Fbrannondorsey%2Fnaive-hashcat%2Freleases%2Fdownload%2Fdata%2Frockyou.txt&usg=AOvVaw3snAERl1mU6Ccr4WFEazBd  
