@@ -460,7 +460,7 @@ if len(contenu) !=0:
 
 		for filename in os.listdir("./"):
 			if ".xml" in filename:
-				os.system(f"python {path_impacket}/Get-GPPPassword.py -xmlfile '{filename}' 'LOCAL' " + " | grep 'Username\\|Password' | awk '{print $4}' > xml_cred.txt")
+				os.system(f"python3 {path_impacket}/Get-GPPPassword.py -xmlfile '{filename}' 'LOCAL' " + " | grep 'Username\\|Password' | awk '{print $4}' > xml_cred.txt")
 				with open("xml_cred.txt","r") as fichier:
 					contenu=fichier.readlines()
 				os.system("rm xml_cred.txt")
