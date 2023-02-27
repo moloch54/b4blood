@@ -20,13 +20,18 @@ sudo snap install crackmapexec
 sudo apt install smbmap  
 sudo apt install smbclient  
 sudo mkdir /usr/share/wordlists  
+sudo mkdir /usr/share/wordlists/seclists/Usernames
 ```  
 To download rockyou.txt:  
 https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwiKtJWIqrT9AhVFSaQEHUPZDoEQFnoECBIQAQ&url=https%3A%2F%2Fgithub.com%2Fbrannondorsey%2Fnaive-hashcat%2Freleases%2Fdownload%2Fdata%2Frockyou.txt&usg=AOvVaw3snAERl1mU6Ccr4WFEazBd  
 
+To download xato-net-10-million-usernames.txt:  
+
+
 | :warning: WARNING                                     |
 |:------------------------------------------------------|
-|rockyou.txt must be in /usr/share/wordlists/rockyou.txt|
+|rockyou.txt must be in /usr/share/wordlists/rockyou.txt|  
+|xato-net-10-million-usernames must be in /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt| 
 
 
 | :warning: WARNING2                                                                                                      |
