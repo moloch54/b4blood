@@ -4,7 +4,9 @@ import os
 
 os.system("sudo apt-get update")
 os.system("sudo install -y ntpdate")
-os.system("pip3 install kerbrute")
+os.system("git clone https://github.com/TarlogicSecurity/kerbrute")
+os.system("pip install -r kerbrute/requirements.txt")
+os.system("sudo cp kerbrute/kerbrute.py /usr/bin/kerbrute")
 os.system("sudo git clone https://github.com/moloch54/b4blood")
 os.system("sudo cp b4blood/b4blood.py /usr/bin/b4blood")
 os.system("sudo chmod +x /usr/bin/b4blood")
