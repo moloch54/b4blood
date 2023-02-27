@@ -19,7 +19,7 @@ Rename it to "kerbrute"
 ```sh
 cd ~/Downloads
 sudo cp kerbrute /usr/bin
-sudo chmod +x /bin/usr/kerbrute  
+sudo chmod +x /usr/bin/kerbrute  
 ```
 
 
