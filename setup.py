@@ -2,7 +2,7 @@
 
 import os
 
-os.system("sudo apt-get update")
+os.system("sudo apt update")
 os.system("sudo install -y ntpdate")
 os.system("sudo cp b4blood.py /usr/bin/b4blood")
 os.system("sudo chmod +x /usr/bin/b4blood")
