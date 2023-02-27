@@ -28,7 +28,7 @@ def nmap_thread(ip_to_scan):
 def parse_arg():
 
 	parser = argparse.ArgumentParser(description="b4blood 192.168.0.40, b4blood 192.168.0.0/24, b4blood --internal -i eth0")
-	parser.add_argument("ip", help="Provide an IP or a range, 192.168.0.23, 192.168.8.*, 192.168.7.0/24")
+	parser.add_argument("--ip", help="Provide an IP or a range, 192.168.0.23, 192.168.8.*, 192.168.7.0/24")
 	parser.add_argument("--internal", action="store_true", help="DHCP broadcast resquest, you must be physicaly on the network.")
 	parser.add_argument("-U", help="Provide your own userlist to Kerbrute users. Default xato-net-10-million-usernames. b4blood 192.168.0.8 -U users.txt")
 	parser.add_argument("-P", help="Provide your own passlist to Kerbrute users. Default rockyou.txt. b4blood 192.168.0.8 -P pass.txt, b4blood 192.168.0.8 -U users.txt -P pass.txt")
