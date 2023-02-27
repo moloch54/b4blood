@@ -10,7 +10,11 @@ Installation (KALI):
 ```sh
 git clone https://github.com/moloch54/b4blood  
 sudo python3 b4blood/setup.py  
-```  
+```
+Download kerbrute for your computer:  
+https://github.com/ropnop/kerbrute/releases  
+rename it to "kerbrute" and place it in /usr/bin
+
 
 Installation (UBUNTU):  
 ```sh
@@ -20,8 +24,12 @@ sudo snap install crackmapexec
 sudo apt install smbmap  
 sudo apt install smbclient  
 sudo mkdir -p /usr/share/wordlists  
-sudo mkdir -p /usr/share/wordlists/seclists/Usernames
+sudo mkdir -p /usr/share/wordlists/seclists/Usernames   
 ```  
+Download kerbrute for your computer:  
+https://github.com/ropnop/kerbrute/releases  
+rename it to "kerbrute" and place it in /usr/bin  
+
 To download rockyou.txt:  
 https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwiKtJWIqrT9AhVFSaQEHUPZDoEQFnoECBIQAQ&url=https%3A%2F%2Fgithub.com%2Fbrannondorsey%2Fnaive-hashcat%2Freleases%2Fdownload%2Fdata%2Frockyou.txt&usg=AOvVaw3snAERl1mU6Ccr4WFEazBd  
 
