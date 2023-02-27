@@ -11,22 +11,7 @@ Installation (KALI):
 git clone https://github.com/moloch54/b4blood  
 sudo python3 b4blood/setup.py  
 ```
-Download kerbrute for your computer:  
-https://github.com/ropnop/kerbrute/releases  
-rename it to "kerbrute" and place it in /usr/bin  
-sudo chmod +x /bin/usr/kerbrute  
 
-
-Installation (UBUNTU):  
-```sh
-git clone https://github.com/moloch54/b4blood  
-sudo python3 b4blood/setup.py 
-sudo snap install crackmapexec    
-sudo apt install smbmap  
-sudo apt install smbclient  
-sudo mkdir -p /usr/share/wordlists  
-sudo mkdir -p /usr/share/wordlists/seclists/Usernames   
-```  
 Download kerbrute for your computer:  
 https://github.com/ropnop/kerbrute/releases  
 Rename it to "kerbrute"  
