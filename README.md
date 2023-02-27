@@ -36,7 +36,7 @@ path_impacket="/opt/impacket/examples"                                          
 
 ```sh
 USAGE:  
-Make fisrt a folfer, a lot of logs will be written.  
+Make fisrt a folder, a lot of logs will be written.  
 
 mkdir myfolder; cd myfolder  
 
