@@ -513,7 +513,7 @@ if len(contenu) !=0:
 		if ssh:
 			os.system(f'crackmapexec ssh {ip_to_scan} -u {user} -p {passw}')
 		if winrm:
-			os.system(f'crackmapexec winrm {ip_to_scan} -u {user} -p {passw}')
+			os.system(f'crackmapexec winrm {ip_to_scan} -u {user} -p {passw} -d {Domain_Name}')
 		print()
 	
 	if os.path.isdir("smb_dump"):
