@@ -1,9 +1,9 @@
 # b4blood
 Just a wrapper, scan and search a breach in Active Directory.  
-Find Domain Controller on a network, enumerate users, AS-REP Roasting and hash cracking, bruteforce password, dump AD users, DRSUAPI, scan SMB shares for passwords, scan for remote accesses.  
+Find Domain Controller on a network, enumerate users, AS-REP Roasting and hash cracking, bruteforce password, dump AD users, DRSUAPI, scan NFS/SMB shares for passwords, scan for remote accesses.  
 
 Very useful for CTF's, this is a nice tool before BloodHound ingestor.  
-Could be use for internal audit with this option: --internal -i eth0  
+Could be use for internal audit with these options: --internal -i eth0  
 
 
 Installation (KALI):  
