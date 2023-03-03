@@ -186,7 +186,7 @@ if internal == True:
 	if len(contenu) >=3:
 		domain_name = contenu[2].replace(" ","")
 		domain_name = domain_name.replace("\n","")
-		#domain_name = domain_name.replace("\\x00","")
+		domain_name = domain_name.replace("\\x00","")
 		printf(f" domain name: {domain_name}",green)
 
 	if not any(x in primary_dns for x in ["192","172","10"]):
@@ -195,10 +195,10 @@ if internal == True:
 
 	if domain_name !="":
 		printf(" Resolving domain name",green)	
+
 		os.system(f'dig @{primary_dns} {domain_name} +short  > domain_name_resolved.txt')
 		with open("domain_name_resolved.txt") as fichier:
 			contenu=fichier.readlines()
-		os.system("rm domain_name_resolved.txt")
 
 		if len(contenu) >1:
 			printf(" error resolving domain name, adding DHCP and DNS to the hostslist to scan. May retry without --internal", red)
@@ -207,17 +207,16 @@ if internal == True:
 			os.system(f"echo {primary_dns} >> hostslist.txt")
 
 		if len(contenu) == 1:
-			with open("domain_name_resolved","r") as fichier:
+			with open("domain_name_resolved.txt","r") as fichier:
 				contenu = fichier.read()
-			printf(" resolving success: {domain_name} {contenu}")
-			os.system("echo domain_name_resolved.txt > hostslist.txt")
+			printf(f" resolving success: {domain_name} {contenu}",green)
+			os.system("cp domain_name_resolved.txt hostslist.txt")
 	if not domain_name:
 		printf(" no domain name, adding the primary DHCP and DNS to the hostslist to scan", red)
 		os.system(f"echo {dhcp} > hostslist.txt")
 		os.system(f"echo {primary_dns} >> hostslist.txt")
-
-	os.system(f'nmap -p 88 -iL hostslist.txt -Pn -T4 | grep "open" -B5 | grep "Nmap scan report" | cut -d " " -f 5- | tee DC_list.txt')
-	os.system("rm hostslist.txt")
+	os.system(f'nmap -p 88 -iL hostslist.txt -Pn -T4 | grep "open" -B5 | grep "Nmap scan report" | cut -d " " -f 5- >  DC_list.txt')
+	#os.system("rm hostslist.txt")
 
 
 else:
@@ -251,8 +250,8 @@ if len(contenu) > 1:
 	zob=re.findall(reg,zob)[0]
 	os.system(f'echo "{zob}" > DC.txt')
 else:
-	os.system('cat DC_list.txt > DC.txt')
-	os.system("rm DC_list.txt")
+	os.system('cp DC_list.txt DC.txt')
+	#os.system("rm DC_list.txt")
 with open("DC.txt","r") as fichier:
 	contenu=fichier.readlines()
 ip_to_scan = contenu[0].replace("\n","")
