@@ -1,7 +1,9 @@
+# b4blood  
 ![banner](https://user-images.githubusercontent.com/123097488/222895938-2e0568c1-71ec-4d5c-8fb8-e5122399fc33.png)  
 Just a wrapper, scan and search a breach in Active Directory to gain access to your first shell.  
 
 * Scan the DC, time sync for Kerberos  
+* Scan for SMB vulns
 * Kerbrute users/passwords, you can provide your own users list (-U my_userslist.txt) and/or your password list (-P passlist.txt) 
 * Check for AS-REP roasting and launch rockyou.txt against the hash  
 * Dump AD
@@ -57,38 +59,41 @@ b4blood --ip 192.168.0.* -U users.txt -P passwd.txt
 b4blood --internal -i eth0  
 ```  
   
-Features:  
+# Features
 
-Scan the DC, time sync for Kerberos  
+* Scan the DC, time sync for Kerberos  
 ![synchro](https://user-images.githubusercontent.com/123097488/222896000-3bdea77c-2f4d-4e5b-b2ca-24814e7c912d.png)  
 
-Kerbrute users/passwords, you can provide your own users list (-U my_userslist.txt) and/or your password list (-P passlist.txt) 
+* Scan for SMB vulns  
+![smb_vuln](https://user-images.githubusercontent.com/123097488/222903594-b49be048-d172-4dee-ac3d-3df82845d326.png)  
+
+* Kerbrute users/passwords, you can provide your own users list (-U my_userslist.txt) and/or your password list (-P passlist.txt) 
 ![ker](https://user-images.githubusercontent.com/123097488/222896214-a5e4d54c-d1e8-4732-bdcd-92c4b12c2c28.png)  
 
-Check for AS-REP roasting and launch rockyou.txt against the hash  
+* Check for AS-REP roasting and launch rockyou.txt against the hash  
 ![asrep](https://user-images.githubusercontent.com/123097488/222895707-124849b4-3303-4d23-b23e-e2c658e524ac.png)  
 
-Dump AD
+* Dump AD
 ![ldap](https://user-images.githubusercontent.com/123097488/222896889-b57679de-210e-46ff-b2e4-e15baaead00b.png)  
 
-Scan recursively SMB/NFS shares and dumping juicy files (could be long, --nsd to skip this part)
+* Scan recursively SMB/NFS shares and dumping juicy files (could be long, --nsd to skip this part)
 ![smb_shares](https://user-images.githubusercontent.com/123097488/222895755-c1b764dc-52a8-4a49-9fdb-22ff1b862764.png)  
 ![smb_dump](https://user-images.githubusercontent.com/123097488/222895744-8e1cc8cd-663d-48f3-96d0-9b1b9deeb347.png)  
 ![NFS](https://user-images.githubusercontent.com/123097488/222901480-ab46b68e-353b-4121-a451-9d4fbb8ad9c8.png)  
 
 
-Scan for .xml GPP files in SYSVOL and extract passwords  
+* Scan for .xml GPP files in SYSVOL and extract passwords  
 ![gpp](https://user-images.githubusercontent.com/123097488/222903003-0bd05c02-6c6a-47d5-8837-82eff2ced89c.png)  
 
-Scan remote connections  
+* Scan remote connections  
 ![ssh](https://user-images.githubusercontent.com/123097488/222895583-44424f0f-0f6e-4fce-a077-e8f38ceb8f46.png) 
 
-Scan for Kerberoastable accounts  
+* Scan for Kerberoastable accounts  
 ![kerberostable](https://user-images.githubusercontent.com/123097488/222897588-f6be19af-f187-43af-b0a7-c1706a949ad1.png)  
 
 Add your new creds to all_creds.txt and relaunch b4blood  
 
-Dump NTDS.DIT  
+* Dump NTDS.DIT  
 ![ntds](https://user-images.githubusercontent.com/123097488/222900861-45b1fb57-787a-4283-920f-41a66aa3b1d0.png)  
 
 
