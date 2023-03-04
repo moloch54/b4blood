@@ -618,7 +618,7 @@ if len(contenu) !=0:
 	user=contenu[0].split(":")[0]
 	passw=contenu[0].split(":")[1].replace("\n","")
 	printf(" scanning Kerberoastable accounts:",green)
-	os.system(f"python /opt/impacket/examples/GetUserSPNs.py -dc-ip {ip_to_scan} {Domain_Name}/{user}:{passw} | grep -v Impacket")
+	os.system(f"python {path_impacket}/GetUserSPNs.py -dc-ip {ip_to_scan} {Domain_Name}/{user}:{passw} | grep -v Impacket")
 
 if os.path.isdir("./smb_dump"):
 	os.chdir("./smb_dump")
