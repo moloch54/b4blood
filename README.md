@@ -74,7 +74,7 @@ Scan remote connections
 Scan for Kerberoastable accounts  
 ![kerberostable](https://user-images.githubusercontent.com/123097488/222897588-f6be19af-f187-43af-b0a7-c1706a949ad1.png)  
 
-Add your new creds found and relaunch b4blood  
+Add your new creds to all_creds.txt and relaunch b4blood  
 
 Dump NTDS.DIT  
 ![ntds](https://user-images.githubusercontent.com/123097488/222900861-45b1fb57-787a-4283-920f-41a66aa3b1d0.png)  
