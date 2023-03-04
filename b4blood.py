@@ -595,7 +595,7 @@ if len(contenu) !=0:
 
 			os.chdir("../")
 			if os.listdir("./smb_dump"):
-				printf(" Could be interesting in smb_dump/",green)
+				printf(" Could be interesting in /smb_dump",green)
 				for filename in os.listdir("./smb_dump"):
 					print(yellow+filename+white)
 				print()
