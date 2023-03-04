@@ -9,8 +9,8 @@ Just a wrapper, scan and search a breach in Active Directory to gain access to y
 * Kerbrutes users/passwords, you can provide your own users list (-U my_userslist.txt) and/or your password list (-P passlist.txt) 
 * Checks for AS-REP roasting and launch rockyou.txt against the hash  
 * Dumps AD
-* Scans recursively SMB/NFS shares and dumping juicy files (could be long, --nsd to skip this part)
-* Scans for .xml GPP files in SYSVOL and extract passwords  
+* Scans recursively SMB/NFS shares and dumps juicy files (could be long, --nsd to skip this part)
+* Scans for .xml GPP files in SYSVOL and extracts passwords  
 * Scans for remote connections  
 * Scans for Kerberoastable accounts  
 * Dumps NTDS.DIT  
@@ -74,22 +74,22 @@ b4blood --internal -i eth0
 * Kerbrutes users/passwords, you can provide your own users list (-U my_userslist.txt) and/or your password list (-P passlist.txt) 
 ![ker](https://user-images.githubusercontent.com/123097488/222896214-a5e4d54c-d1e8-4732-bdcd-92c4b12c2c28.png)  
 
-* Checks for AS-REP roasting and launch rockyou.txt against the hash  
+* Checks for AS-REP roasting and launches rockyou.txt against the hash  
 ![asrep](https://user-images.githubusercontent.com/123097488/222895707-124849b4-3303-4d23-b23e-e2c658e524ac.png)  
 
 * Dumps AD
 ![ldap](https://user-images.githubusercontent.com/123097488/222896889-b57679de-210e-46ff-b2e4-e15baaead00b.png)  
 
-* Scans recursively SMB/NFS shares and dumping juicy files (could be long, --nsd to skip this part)
+* Scans recursively SMB/NFS shares and dumps juicy files (could be long, --nsd to skip this part)
 ![smb_shares](https://user-images.githubusercontent.com/123097488/222895755-c1b764dc-52a8-4a49-9fdb-22ff1b862764.png)  
 ![smb_dump](https://user-images.githubusercontent.com/123097488/222895744-8e1cc8cd-663d-48f3-96d0-9b1b9deeb347.png)  
 ![NFS](https://user-images.githubusercontent.com/123097488/222901480-ab46b68e-353b-4121-a451-9d4fbb8ad9c8.png)  
 
 
-* Scans for .xml GPP files in SYSVOL and extract passwords  
+* Scans for .xml GPP files in SYSVOL and extracts passwords  
 ![gpp](https://user-images.githubusercontent.com/123097488/222903003-0bd05c02-6c6a-47d5-8837-82eff2ced89c.png)  
 
-* Scans remote connections  
+* Scans for remote connections  
 ![ssh](https://user-images.githubusercontent.com/123097488/222895583-44424f0f-0f6e-4fce-a077-e8f38ceb8f46.png) 
 
 * Scans for Kerberoastable accounts  
