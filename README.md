@@ -64,7 +64,8 @@ Dump AD
 Scan recursively SMB/NFS shares and dumping juicy files (could be long, --nsd to skip this part)
 ![smb_shares](https://user-images.githubusercontent.com/123097488/222895755-c1b764dc-52a8-4a49-9fdb-22ff1b862764.png)  
 ![smb_dump](https://user-images.githubusercontent.com/123097488/222895744-8e1cc8cd-663d-48f3-96d0-9b1b9deeb347.png)  
-![NFS](https://user-images.githubusercontent.com/123097488/222895578-2566f364-8921-4f38-a464-85d474d3d1ed.png)  
+![NFS](https://user-images.githubusercontent.com/123097488/222901480-ab46b68e-353b-4121-a451-9d4fbb8ad9c8.png)  
+
 
 Scan for .xml GPP files in SYSVOL and extract passwords  
 
