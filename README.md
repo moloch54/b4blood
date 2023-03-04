@@ -1,5 +1,7 @@
 # b4blood  
-![banner](https://user-images.githubusercontent.com/123097488/222895938-2e0568c1-71ec-4d5c-8fb8-e5122399fc33.png)  
+![banner](https://user-images.githubusercontent.com/123097488/222904224-0211b704-f5ad-47b0-87ed-df5a838fa168.png)  
+
+
 Just a wrapper, scan and search a breach in Active Directory to gain access to your first shell.  
 
 * Scan the DC, time sync for Kerberos  
