@@ -68,6 +68,7 @@ Scan recursively SMB/NFS shares and dumping juicy files (could be long, --nsd to
 
 
 Scan for .xml GPP files in SYSVOL and extract passwords  
+![gpp](https://user-images.githubusercontent.com/123097488/222903003-0bd05c02-6c6a-47d5-8837-82eff2ced89c.png)  
 
 Scan remote connections  
 ![ssh](https://user-images.githubusercontent.com/123097488/222895583-44424f0f-0f6e-4fce-a077-e8f38ceb8f46.png) 
