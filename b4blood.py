@@ -97,9 +97,8 @@ banner ="""
 
 print(red+banner+white)
 print("https://github.com/moloch54/b4blood")
-print()
-print("Find Domain Controller on a network, enumerate users, AS-REP Roasting and hash cracking, bruteforce password, dump AD users, scan SMB shares and remote accesses.")
 print("2023 by Moloch\n")
+print()
 
 ip,internal,U,P,interface, nsd = parse_arg()
 ip_to_scan = ip
