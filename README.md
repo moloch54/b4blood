@@ -26,7 +26,7 @@ git clone https://github.com/moloch54/b4blood
 sudo python3 b4blood/setup.py  
 ```
 
-Download kerbrute for your computer:  
+Download kerbrute for your computer (AMD or x64 CPU):  
 https://github.com/ropnop/kerbrute/releases  
 Rename it to "kerbrute"  
 
