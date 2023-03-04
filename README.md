@@ -20,7 +20,7 @@ Very useful for CTF's, this is a nice tool before BloodHound ingestor.
 Could be use for internal audit with these options: --internal -i eth0  
 
 
---- Installation (KALI) ---  
+# Installation (KALI)  
 ```sh
 git clone https://github.com/moloch54/b4blood  
 sudo python3 b4blood/setup.py  
