@@ -46,7 +46,9 @@ sudo chmod +x /usr/bin/kerbrute
 | :warning: WARNING2                                                                                                      |
 | :-----------------------------------------------------------------------------------------------------------------------|
 |If Impacket is already installed, you need to specifie line 12 in /usr/bin/b4blood YOUR own path for impacket/examples:  |   
-path_impacket="/opt/impacket/examples"                                                                                    |
+path_impacket="/opt/impacket/examples"                                                                                    |  
+
+# Usage  
 
 ```sh
 USAGE:  
