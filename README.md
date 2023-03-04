@@ -1,6 +1,16 @@
 ![banner](https://user-images.githubusercontent.com/123097488/222895938-2e0568c1-71ec-4d5c-8fb8-e5122399fc33.png)  
-Just a wrapper, scan and search a breach in Active Directory.  
-Find Domain Controller on a network, enumerate users, AS-REP Roasting/Kerberoasting and hash cracking, bruteforce password, dump AD users, DRSUAPI, scan NFS/SMB shares for passwords, scan for remote accesses.  
+Just a wrapper, scan and search a breach in Active Directory to gain access to your first shell.  
+
+* Scan the DC, time sync for Kerberos  
+* Kerbrute users/passwords, you can provide your own users list (-U my_userslist.txt) and/or your password list (-P passlist.txt) 
+* Check for AS-REP roasting and launch rockyou.txt against the hash  
+* Dump AD
+* Scan recursively SMB/NFS shares and dumping juicy files (could be long, --nsd to skip this part)
+* Scan for .xml GPP files in SYSVOL and extract passwords  
+* Scan for remote connections  
+* Scan for Kerberoastable accounts  
+* Dump NTDS.DIT  
+
 
 Very useful for CTF's, this is a nice tool before BloodHound ingestor.  
 Could be use for internal audit with these options: --internal -i eth0  
