@@ -653,21 +653,23 @@ if os.path.isdir("./smb_dump"):
 							printf(f" Found in smb_dump/{filename}:",green)
 							print(yellow+cred+white+"	\t(Added to all_creds.txt)")
 
-							os.chdir("../")
-							with open("all_creds.txt","r+") as fichier2:
+							#os.chdir("../")
+							with open("../all_creds.txt","r") as fichier2:
 								contenu_all_creds=fichier2.readlines()
 							if (cred+"\n") not in contenu_all_creds:	
-								os.system(f"echo '{cred}' >> all_creds.txt")
+								os.system(f"echo '{cred}' >> ../all_creds.txt")
+	
 	os.chdir("../")
 
 
 
 print()
+os.system("pwd")
 with open("all_creds.txt","r") as fichier:
 	contenu=fichier.read()
-	if contenu:
-		printf(" All creds:", green)
-		print(yellow+contenu+white)
+if contenu:
+	printf(" All creds:", green)
+	print(yellow+contenu+white)
 
 
 
