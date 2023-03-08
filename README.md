@@ -2,7 +2,7 @@
 ![banner](https://user-images.githubusercontent.com/123097488/222904224-0211b704-f5ad-47b0-87ed-df5a838fa168.png)  
 
 
-Just a wrapper, scan and search a breach in Active Directory to gain access to your first shell.  
+Just a wrapper, scans for a breach in Active Directory to gain access to your first shell.  
 
 * Scans the DC, time sync for Kerberos  
 * Scans for SMB vulns
