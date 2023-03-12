@@ -190,7 +190,7 @@ if internal:
 
 	if not any(x in primary_dns for x in ["192","172","10"]):
 		printf(" primary DNS is not in the local network, try without --internal",red)
-		exit()
+		#exit()
 
 	if domain_name !="":
 		printf(" Resolving domain name",green)	
@@ -259,25 +259,32 @@ ip_to_scan=re.findall(reg,ip_to_scan)[0]
 
 printf(f" scanning {ip_to_scan}", green)
 
-os.system(f'nmap {ip_to_scan} -p 22,139,389,445,2049,3268,3389,5985 -Pn | grep open > nmap_scan.txt; nmap {ip_to_scan} -p 3389 -sC -Pn >> nmap_scan.txt')
+os.system(f'nmap {ip_to_scan} -p 22,88,139,389,445,2049,3268,3389,5985 -Pn | grep open > nmap_scan.txt; nmap {ip_to_scan} -p 3389 -sC -Pn >> nmap_scan.txt')
 os.system(f'cat nmap_scan.txt | grep DNS_Domain_Name | cut -d ":" -f2 >> DC.txt')
 os.system("cat nmap_scan.txt | grep DNS_Computer_Name | awk '{print $3}' > CN.txt")
+
+# check si 3389 pas ouvert, on cherche le nom de domaine sur 389
+with open('DC.txt', 'r') as fichier:
+	contenu = fichier.readlines()
+if len(contenu) <=1:
+	printf(" port 3389 not open, scanning 389",red)
+	os.system(f"nmap {ip_to_scan} -p 389 -sV -Pn --open | grep '389/tcp'" + " | awk '{print $10}' | cut -d ',' -f1 >> DC.txt")
 
 
 with open('DC.txt', 'r') as fichier:
 	contenu = fichier.readlines()
-os.system("rm DC.txt")
-
+	#print(contenu)
+#os.system("rm DC.txt")
 
 if len(contenu) <=1:
 	printf(f" No Domain Name found on {ip_to_scan}", red)
 	#exit()
 	Domain_Name=""
-	krb=0
+	#krb=0
 else:
 	Domain_Name = contenu[1].replace("\n","")
 	Domain_Name = Domain_Name.replace(" ","")
-	krb=1
+	#krb=1
 
 with open("CN.txt","r") as f:
 	CN=f.read()
@@ -285,7 +292,7 @@ with open("CN.txt","r") as f:
 
 
 print("")
-printf(' '+green+f'DC {ip_to_scan} {CN}'+white,green )
+printf(' '+green+f'DC {ip_to_scan} {Domain_Name}	{CN}'+white,green )
 printf(' NTP synchronizing with the DC for Kerberos',green)
 cmd=f'libs/ntp_sync.sh {ip_to_scan}'
 subprocess.call(cmd,shell=True)
@@ -309,6 +316,7 @@ winrm = 0
 ldap=0
 nfs=0
 rdp=0
+krb=0
 for item in contenu_nmap:
 	if "22/tcp" in item:
 		ssh=1
@@ -322,6 +330,8 @@ for item in contenu_nmap:
 		nfs=1
 	if "3389/tcp" in item:
 		rdp=1
+	if "88/tcp" in item:
+		krb=1
 
 if smb==1:
 		printf(" scanning SMB vulns ",green)
