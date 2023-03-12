@@ -284,6 +284,7 @@ if len(contenu) <=1:
 else:
 	Domain_Name = contenu[1].replace("\n","")
 	Domain_Name = Domain_Name.replace(" ","")
+	Domain_Name = Domain_Name.replace(".local0.","")
 	#krb=1
 
 with open("CN.txt","r") as f:
