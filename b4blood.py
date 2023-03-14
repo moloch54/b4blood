@@ -465,7 +465,7 @@ if ldap and U ==None:
 
 
 if nfs:
-	file_content="account,compte,cred,user,pass,util,backup,note,vbs,ps1,bat,code,conf,cfg,rsa,pem,key,xml,xslx,doc,id,txt,zip".split(",")
+	file_content="log,account,compte,cred,user,pass,util,backup,note,vbs,ps1,bat,code,conf,cfg,rsa,pem,key,xml,xslx,doc,id,txt,zip".split(",")
 	printf(" scanning NFS",green)
 	r=random.randrange(1000000)
 	os.system(f"showmount -e {ip_to_scan} > NFS.txt")
@@ -651,7 +651,7 @@ if len(contenu) !=0:
 			with open(f"shares/shares_{user}.txt","r") as fichier3:
 				shares=fichier3.readlines()
 			os.chdir("smb_dump")
-			file_content="account,compte,cred,user,pass,util,backup,note,vbs,ps1,bat,code,conf,cfg,rsa,pem,key,xml,xslx,doc,id,txt,zip".split(",")
+			file_content="log,account,compte,cred,user,pass,util,backup,note,vbs,ps1,bat,code,conf,cfg,rsa,pem,key,xml,xslx,doc,id,txt,zip".split(",")
 			for share in shares:
 				share=share.replace("\n","")
 				share=share.replace(" ","")
