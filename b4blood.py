@@ -653,11 +653,11 @@ contenu=[]
 if os.path.isfile(f'all_creds.txt'):
 	with open("all_creds.txt","r") as fichier:
 		contenu=fichier.readlines()
-if os.path.isfile(f'valid_users.txt') and krb and not smb:
+if os.path.isfile(f'valid_users.txt'):
 	with open("valid_users.txt") as fr:
 		con=fr.readlines()
 
-if smb and len(con) !=0:
+if smb and (len(con) !=0):
 	printf(" trying user as pass (SMB) and password spraying (could take a while...)",green)
 	with open("all_creds.txt","r") as fi:
 		co=fi.readlines()
@@ -677,7 +677,7 @@ if smb and len(con) !=0:
 				us=s.replace(domain_name+'\\',"")
 				print(us)
 				us=us[:us.index(":")]
-				print(yellow + s + white+		f"\t--> smbpassw -r {ip_to_scan} -U {us}")
+				print(yellow + s + white+		f"\t--> smbpasswd -r {ip_to_scan} -U {us}")
 			else:
 				print(yellow + s + white)
 
