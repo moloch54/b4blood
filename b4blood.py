@@ -253,7 +253,7 @@ ip_to_scan=re.findall(reg,ip_to_scan)[0]
 
 printf(f" scanning {ip_to_scan}", green)
 
-os.system(f'nmap {ip_to_scan} -p 22,88,139,389,445,2049,3268,3389,5985 -Pn | grep open > nmap_scan.txt; nmap {ip_to_scan} -p 443,3389 -sC -Pn >> nmap_scan.txt')
+os.system(f'nmap {ip_to_scan} -p 22,88,139,389,445,2049,3268,3389,5985 -Pn | grep open > nmap_scan.txt; nmap {ip_to_scan} -p 3389 -sC -Pn >> nmap_scan.txt')
 os.system(f'cat nmap_scan.txt | grep DNS_Domain_Name | cut -d ":" -f2 >> DC.txt')
 os.system("cat nmap_scan.txt | grep DNS_Computer_Name | awk '{print $3}' > CN.txt")
 
@@ -261,8 +261,11 @@ os.system("cat nmap_scan.txt | grep DNS_Computer_Name | awk '{print $3}' > CN.tx
 with open('DC.txt', 'r') as fichier:
 	contenu = fichier.readlines()
 if len(contenu) <=1:
-	printf(" port 3389 not open, scanning port 389 for domain name",red)
-	os.system(f"nmap {ip_to_scan} -p 389 -sV -Pn --open | grep '389/tcp'" + " | awk '{print $10}' | cut -d ',' -f1 >> DC.txt")
+	printf(" port 3389 not responding, scanning port 389 for domain name and controller name",red)
+	os.system(f"nmap {ip_to_scan} -p 389 -sV -Pn --open > nmap_ldap.txt ")
+	os.system("cat nmap_ldap.txt | grep '389/tcp'" + " | awk '{print $10}' | cut -d ',' -f1 >> DC.txt")
+	os.system("cat nmap_ldap.txt | grep 'Service Info' | awk '{print $4}' | cut -d ';' -f1 > CN.txt")
+
 	with open('DC.txt', 'r') as fichier:
 		contenu = fichier.readlines()
 	if len(contenu) > 1:
@@ -270,7 +273,11 @@ if len(contenu) <=1:
 		contenu[1] = contenu[1].replace(" ","")
 		contenu[1] = contenu[1].replace("\\x00","")	
 		# on remplace spooky.local0. par spooky.local
-		contenu[1] = contenu[1][:-2]+"\n"
+		#print(contenu[1])
+		if contenu[1][-1:] == ".":
+			contenu[1] = contenu[1][:-2]+"\n"
+		else:
+			contenu[1] = contenu[1] + "\n"
 		with open('DC.txt', 'w') as fichier:
 			fichier.writelines(contenu)
 	
@@ -349,7 +356,9 @@ if smb and not fast:
 		print()
 	else:
 		os.system("rm smb_vuln.txt")
-	
+	printf(" scanning for spooler (printernightmare)", green)
+	os.system(f"rpcdump.py @{ip_to_scan} | egrep 'MS-RPRN|MS-PAR'")
+	print(white,end="")
 	# scan anonymous shares
 	if not fast:
 		os.system('if [ ! -d "smb_dump" ];then mkdir smb_dump; fi')
